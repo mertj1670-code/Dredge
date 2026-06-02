@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DREDGE 渔帆暗涌 攻略站</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#070b10;--bg-card:#0d1520;--bg-card-hover:#111c2a;--bg-detail:#0a1019;
+    --border:#1a2a3a;--text:#c8d6e5;--text-dim:#6b7d95;--accent:#2dd4bf;
+    --accent-dim:#0f766e;--danger:#ef4444;--warning:#f59e0b;
+    --day:#f59e0b;--night:#6366f1;--anytime:#22c55e;--trawl:#f472b6;--pot:#fb923c;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+  .header{background:linear-gradient(180deg,rgba(13,21,32,0.95) 0%,rgba(7,11,16,0.98) 100%);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+  .header-inner{max-width:1280px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .logo{font-size:1.4rem;font-weight:800;color:var(--accent);letter-spacing:2px;white-space:nowrap}
+  .nav{display:flex;gap:4px;flex-wrap:wrap}
+  .nav a{color:var(--text-dim);text-decoration:none;padding:6px 12px;border-radius:6px;font-size:0.85rem;transition:all .2s;white-space:nowrap}
+  .nav a:hover,.nav a.active{color:var(--accent);background:rgba(45,212,191,0.08)}
+  .lang-switch{display:flex;gap:2px;margin-left:8px}
+  .lang-btn{background:none;border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.75rem;transition:all .2s}
+  .lang-btn:hover{border-color:var(--accent);color:var(--text)}
+  .lang-btn.active{background:rgba(45,212,191,0.15);color:var(--accent);border-color:var(--accent-dim)}
+  .main{max-width:1280px;margin:0 auto;padding:24px 20px 60px}
+  .section{margin-bottom:48px}
+  .section-title{font-size:1.35rem;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .section-title::before{content:'';display:inline-block;width:4px;height:24px;background:var(--accent);border-radius:2px}
+  .section-desc{color:var(--text-dim);font-size:.9rem;margin-bottom:20px}
+  .filters{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .filters label{font-size:.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+  .filters select,.filters input{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.85rem;outline:none;transition:border-color .2s}
+  .filters select:focus,.filters input:focus{border-color:var(--accent)}
+  .filters input{min-width:180px}
+  .filters input::placeholder{color:var(--text-dim)}
+  .filter-group{display:flex;align-items:center;gap:6px}
+  .btn-reset{margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-dim);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s}
+  .btn-reset:hover{border-color:var(--accent);color:var(--accent)}
+  .stats-bar{display:flex;align-items:center;gap:16px;margin-bottom:14px;font-size:.82rem;color:var(--text-dim)}
+  .stats-bar strong{color:var(--accent)}
+  .fish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .fish-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .2s;cursor:pointer;position:relative}
+  .fish-card:hover{background:var(--bg-card-hover);border-color:var(--accent-dim);transform:translateY(-2px)}
+  .fish-card.expanded{border-color:var(--accent);grid-column:1/-1;background:var(--bg-detail)}
+  .fish-card.aberrant{border-left:3px solid #a855f7}
+  .fish-card .expand-hint{position:absolute;top:14px;right:14px;font-size:.68rem;color:var(--text-dim);opacity:0;transition:opacity .2s}
+  .fish-card:hover .expand-hint{opacity:1}
+  .fish-name{font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+  .fish-latin{font-size:.78rem;color:var(--text-dim);font-style:italic;margin-bottom:10px}
+  .fish-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .tag{font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
+  .tag-location{background:rgba(45,212,191,0.12);color:var(--accent)}
+  .tag-day{background:rgba(245,158,11,0.12);color:var(--day)}
+  .tag-night{background:rgba(99,102,241,0.12);color:var(--night)}
+  .tag-anytime{background:rgba(34,197,94,0.12);color:var(--anytime)}
+  .tag-depth{background:rgba(107,125,149,0.12);color:var(--text-dim)}
+  .tag-type{background:rgba(168,85,247,0.12);color:#c084fc}
+  .tag-method.trawl{background:rgba(244,114,182,0.15);color:var(--trawl)}
+  .tag-method.pot{background:rgba(251,146,60,0.15);color:var(--pot)}
+  .tag-method.rod{background:rgba(45,212,191,0.12);color:var(--accent)}
+  .fish-info{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:.78rem}
+  .fish-info dt{color:var(--text-dim)}
+  .fish-info dd{color:var(--text);font-weight:500;text-align:right}
+  .fish-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);animation:slideDown .2s ease}
+  .fish-card.expanded .fish-detail{display:block}
+  @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .fish-detail h4{font-size:.78rem;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+  .detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .detail-block{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px 14px}
+  .detail-block h5{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+  .detail-block p{font-size:.82rem;color:var(--text);line-height:1.6}
+  .detail-block .sub-loc{color:var(--accent);font-weight:600;font-size:.8rem;display:block;margin-bottom:4px}
+  .detail-block .tip{color:var(--warning);font-size:.78rem}
+  .detail-block .note{color:var(--text-dim);font-size:.76rem;margin-top:4px}
+  .no-results{text-align:center;padding:60px 20px;color:var(--text-dim)}
+  .no-results strong{display:block;color:var(--text);margin-bottom:4px}
+  .equip-table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .equip-table th{text-align:left;padding:10px 14px;color:var(--text-dim);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
+  .equip-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+  .equip-table tr:hover td{background:rgba(45,212,191,0.03)}
+  .equip-cat{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(45,212,191,0.12);color:var(--accent);margin-right:4px}
+  .area-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .area-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;transition:all .2s}
+  .area-card:hover{background:var(--bg-card-hover)}
+  .area-name{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+  .area-depth{font-size:.78rem;color:var(--accent);margin-bottom:10px}
+  .area-desc{font-size:.82rem;color:var(--text-dim);margin-bottom:12px;line-height:1.6}
+  .area-fish{font-size:.78rem;color:var(--text-dim)}
+  .area-fish strong{color:var(--text)}
+  .timeline{position:relative;padding-left:28px;margin:20px 0}
+  .timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--border)}
+  .timeline-item{position:relative;margin-bottom:24px}
+  .timeline-item::before{content:'';position:absolute;left:-22px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+  .timeline-step{font-size:.72rem;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+  .timeline-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px}
+  .timeline-desc{font-size:.82rem;color:var(--text-dim);line-height:1.6}
+  .npc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+  .npc-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:all .2s;cursor:pointer}
+  .npc-card:hover{background:var(--bg-card-hover);border-color:var(--accent-dim)}
+  .npc-card.expanded{border-color:var(--accent);background:var(--bg-detail)}
+  .npc-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .npc-icon{width:42px;height:42px;border-radius:50%;background:rgba(45,212,191,0.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+  .npc-name{font-weight:700;font-size:.9rem}
+  .npc-loc{font-size:.72rem;color:var(--accent)}
+  .npc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+  .npc-tag{font-size:.66rem;padding:2px 7px;border-radius:3px;font-weight:600}
+  .npc-tag.quest{background:rgba(245,158,11,0.15);color:var(--warning)}
+  .npc-tag.shop{background:rgba(45,212,191,0.12);color:var(--accent)}
+  .npc-tag.story{background:rgba(168,85,247,0.15);color:#c084fc}
+  .npc-desc{font-size:.8rem;color:var(--text-dim);line-height:1.5}
+  .npc-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);animation:slideDown .2s ease}
+  .npc-card.expanded .npc-detail{display:block}
+  .npc-detail h5{font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+  .npc-detail ul{list-style:none;padding:0}
+  .npc-detail li{font-size:.8rem;color:var(--text-dim);padding:4px 0 4px 16px;position:relative;line-height:1.5}
+  .npc-detail li::before{content:'›';position:absolute;left:0;color:var(--accent);font-weight:700}
+  .spoiler-toggle{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:var(--danger);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;margin:12px 0;transition:all .2s}
+  .spoiler-toggle:hover{background:rgba(239,68,68,0.2)}
+  .spoiler-content{display:none}
+  .spoiler-content.show{display:block;animation:slideDown .2s ease}
+  .guide-banner{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+  .guide-banner>div{flex:1;min-width:280px;border-radius:8px;padding:14px 16px}
+  .guide-banner .guide-title{font-weight:700;font-size:.82rem;margin-bottom:6px}
+  .guide-banner .guide-text{font-size:.76rem;color:var(--text-dim);line-height:1.6}
+  .guide-banner .guide-text strong{color:var(--text)}
+  .aberration-badge{display:inline-block;font-size:.62rem;font-weight:700;color:#c084fc;background:rgba(168,85,247,0.15);padding:2px 6px;border-radius:3px;text-transform:uppercase}
+  .footer{text-align:center;padding:32px 20px;color:var(--text-dim);font-size:.78rem;border-top:1px solid var(--border)}
+  .footer a{color:var(--accent);text-decoration:none}
+  @media(max-width:640px){
+    .header-inner{flex-direction:column;align-items:flex-start}
+    .filters{flex-direction:column;align-items:stretch}
+    .filters input{min-width:auto}
+    .btn-reset{margin-left:0}
+    .fish-grid,.area-grid,.npc-grid{grid-template-columns:1fr}
+    .detail-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">DREDGE</div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+      <nav class="nav" id="mainNav"></nav>
+      <div class="lang-switch" id="langSwitch"></div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <section class="section" id="fish"><h2 class="section-title" data-i18n="fish.title"></h2><p class="section-desc" data-i18n="fish.desc"></p><div class="filters" id="fishFilters"></div><div class="stats-bar" id="statsBar"></div><div class="guide-banner" id="guideBanner"></div><div class="fish-grid" id="fishGrid"></div><div class="no-results" id="noResults" style="display:none"><strong data-i18n="fish.noResult"></strong><span data-i18n="fish.noResultHint"></span></div></section>
+  <section class="section" id="equipment"><h2 class="section-title" data-i18n="equip.title"></h2><p class="section-desc" data-i18n="equip.desc"></p><div id="equipTable"></div></section>
+  <section class="section" id="areas"><h2 class="section-title" data-i18n="areas.title"></h2><p class="section-desc" data-i18n="areas.desc"></p><div class="area-grid" id="areaGrid"></div></section>
+  <section class="section" id="quests"><h2 class="section-title" data-i18n="quests.title"></h2><p class="section-desc" data-i18n="quests.desc"></p><h3 style="font-size:.95rem;font-weight:700;margin-bottom:12px;color:var(--text)" data-i18n="quests.npcTitle"></h3><div class="npc-grid" id="npcGrid"></div><h3 style="font-size:.95rem;font-weight:700;margin:36px 0 12px;color:var(--text)" data-i18n="quests.mainTitle"></h3><div class="timeline" id="timeline"></div><h3 style="font-size:.95rem;font-weight:700;margin:36px 0 12px;color:var(--text)" data-i18n="quests.sideTitle"></h3><div class="fish-grid" id="sideQuests"></div></section>
+  <section class="section" id="faq"><h2 class="section-title" data-i18n="faq.title"></h2><div class="fish-grid" id="faqGrid"></div></section>
+</main>
+
+<footer class="footer"><span data-i18n="footer.text"></span> · <a href="https://www.dredge.game" target="_blank">dredge.game</a></footer>
+
+<script>
+// ═══════════════════════════════════════
+// I18N SYSTEM
+// ═══════════════════════════════════════
+let LANG = 'zh';
+
+const I18N = {
+  zh: {
+    nav: { fish:'鱼类图鉴', equip:'装备升级', areas:'区域概览', quests:'任务攻略', faq:'常见问题' },
+    fish: {
+      title:'鱼类图鉴', desc:'收录全部鱼类，含具体钓点位置与捕捞方式。<span style="color:#c084fc;">紫色边框</span> = 有畸变形态。点击鱼卡展开详细信息。',
+      search:'输入鱼名或钓点...', filterLoc:'区域', filterTime:'时间', filterMethod:'方式', filterDepth:'水深', filterType:'类型',
+      allLoc:'全部区域', allTime:'全部时间', allMethod:'全部方式', allDepth:'全部水深', allType:'全部类型',
+      day:'白天', night:'夜晚', anytime:'任意时间', shallow:'浅水 0-5m', deep:'深水 5m+',
+      rod:'鱼竿', trawl:'拖网', pot:'蟹笼',
+      coastal:'沿海', oceanic:'远洋', mangrove:'红树林', volcanic:'火山', ice:'冰区', abyssal:'深海', hadal:'超深渊',
+      reset:'重置筛选', abOnly:'仅显示畸变', showing:'显示', of:'/', fishUnit:'种鱼',
+      noResult:'没有匹配的鱼', noResultHint:'试试调整筛选条件',
+      expandHint:'点击展开 ▼', collapseHint:'点击收起 ▲',
+      detailTitle:'详细钓点信息', subLocTitle:'具体钓点', condTitle:'捕捞条件', priceTitle:'售价对比', tipTitle:'捕捞技巧',
+      methodLabel:'捕捞方式', equipLabel:'所需装备', sizeLabel:'货舱占格', priceLabel:'普通售价', abPriceLabel:'畸变售价',
+      trawlGuideTitle:'🕸️ 拖网 (Trawl Net) 使用指南',
+      trawlGuideText:'安装在船尾，<strong>航行中自动捕获</strong>小型鱼和水母。<br>· 基础拖网：容量 3 格，浅水使用<br>· 强化拖网：容量 5 格，浅水+深水<br>· 大型拖网：容量 7 格，所有水深<br>拖网满后会停止捕获，需手动取出渔获。',
+      potGuideTitle:'🦀 蟹笼 (Crab Pot) 使用指南',
+      potGuideText:'放置在水中，<strong>8-12 小时后自动捕获</strong>甲壳类和虫类。<br>· 基础蟹笼：耐久 3 天，浅水使用<br>· 强化蟹笼：耐久 5 天，所有水深<br>深水会加速蟹笼损坏。放置后可在任意港口休息等待。<br>记得在损坏前收回，否则蟹笼和渔获都会丢失。'
+    },
+    equip: {
+      title:'装备与升级', desc:'研究零件（Research Parts）通过完成NPC任务或在各个区域探索获得。建议优先升级鱼竿和引擎。',
+      cat:'类别', name:'装备', effect:'效果', unlock:'解锁条件',
+      catRod:'鱼竿', catEngine:'引擎', catTrawl:'拖网', catPot:'蟹笼', catLight:'灯光', catHull:'货舱',
+      coastalRod:'沿海鱼竿 (Coastal)', coastalRodEff:'捕捞沿海鱼类，基础速度', coastalRodUnlock:'初始拥有',
+      oceanicRod:'远洋鱼竿 (Oceanic)', oceanicRodEff:'捕捞远洋鱼类', oceanicRodUnlock:'研究零件解锁',
+      mangroveRod:'红树林鱼竿 (Mangrove)', mangroveRodEff:'捕捞红树林鱼类', mangroveRodUnlock:'扭曲海岸剧情推进',
+      abyssalRod:'深渊鱼竿 (Abyssal)', abyssalRodEff:'捕捞深海鱼类', abyssalRodUnlock:'研究零件解锁',
+      hadalRod:'超深渊鱼竿 (Hadal)', hadalRodEff:'捕捞超深渊鱼类', hadalRodUnlock:'恶魔之脊剧情推进',
+      volcanicRod:'火山鱼竿 (Volcanic)', volcanicRodEff:'捕捞火山区域鱼类', volcanicRodUnlock:'恶魔之脊解锁',
+      iceRod:'冰区鱼竿 (Ice)', iceRodEff:'捕捞苍白之域鱼类', iceRodUnlock:'苍白之域 DLC',
+      engine:'基础 → 强化 → 涡轮引擎', engineEff:'提升航行速度（5/10/15/20/25/30节）', engineUnlock:'研究零件逐步解锁',
+      net:'基础 → 强化 → 大型拖网', netEff:'航行时自动捕捞，容量递增', netUnlock:'研究零件解锁',
+      pot:'基础蟹笼 → 强化蟹笼', potEff:'放置后自动捕获甲壳类，耐久度更高', potUnlock:'研究零件解锁',
+      light:'船灯 → 强化船灯 → 探照灯', lightEff:'提升夜间视野，减缓恐慌值上升', lightUnlock:'研究零件解锁',
+      hull:'基础 → 中型 → 大型货舱', hullEff:'增加货物容量（4×4 → 5×5 → 6×6 等）', hullUnlock:'研究零件解锁'
+    },
+    areas: {
+      title:'区域概览', desc:'游戏共有6个主要区域，按剧情推进顺序排列。',
+      marrows:'马罗群岛 (The Marrows)', marrowsDepth:'深度 0-5m | 起始区域',
+      marrowsDesc:'安全的浅水区，大马罗和黑石岛两个主要岛屿。NPC：鱼贩、收藏家、研究员。所有基础教学在此完成。',
+      marrowsFish:'<strong>钓点：</strong>大马罗沿岸、黑石岛周边、海峡通道 <strong>|</strong> 蓝鲭、鳕鱼、箭鱿、灰鲻、黄貂鱼、湾鲆、红鲷、黑鲈、普通蟹、招潮蟹',
+      gale:'狂风悬崖 (Gale Cliffs)', galeDepth:'深度 5-15m | 需疏浚器',
+      galeDesc:'狭窄峡谷水道，巨型海蛇巡逻。沿峭壁边缘航行相对安全。NPC：隐士、沉船幸存者。',
+      galeFish:'<strong>钓点：</strong>北侧峡谷、南侧窄道、沉船区、海蛇巢穴水域 <strong>|</strong> 大洋鲈、虎鲭、石鱼、黑石斑、康吉鳗、鬼蝠、海鳗、梭鱼、桨鱼',
+      basin:'星池 (Stellar Basin)', basinDepth:'深度 10-30m | 需疏浚器',
+      basinDesc:'开阔浅海，中心有巨大深坑和巨型海怪。需要发电机激活驱怪装置。NPC：研究员、天文学家。',
+      basinFish:'<strong>钓点：</strong>东侧浅滩、中央深坑边缘、西侧暗礁 <strong>|</strong> 锤头鲨、尖吻鲭、幽灵鲨、旗鱼、鲟鱼、星鱼、极光水母、玻璃鱿',
+      strand:'扭曲海岸 (Twisted Strand)', strandDepth:'深度 5-10m | 红树林沼泽',
+      strandDesc:'密布红树林的沼泽地带，水道狭窄蜿蜒，雾气弥漫。NPC：隐士、飞行员。',
+      strandFish:'<strong>钓点：</strong>北侧红树林、废弃营地水域、南侧沼泽 <strong>|</strong> 红树鲷、大海鲢、鳄雀鳝、长鳍鳗、鲶鱼、雀鳝、马蹄蟹',
+      spine:'恶魔之脊 (Devil\'s Spine)', spineDepth:'深度 20-50m | 火山地带',
+      spineDesc:'火山群岛，水域高温。需要完成古代神庙剧情。NPC：狂热信徒、考古学家。',
+      spineFish:'<strong>钓点：</strong>北侧火山群、古神庙水域、南侧沸腾区 <strong>|</strong> 火山鲷、装甲鲂鮄、熔岩鳗、萤火鱿、鮟鱇鱼、火山石斑、庞贝虫',
+      pale:'苍白之域 (The Pale Reach)', paleDepth:'深度 10-40m | DLC 冰区',
+      paleDesc:'冰雪覆盖的极地水域，需破冰船升级。有独特冰冻机制。NPC：冰区探险队。',
+      paleFish:'<strong>钓点：</strong>北部冰原、南部冰川、沉船水域 <strong>|</strong> 冰鱼、极地鳕、皱鳃鲨、睡鲨、冰鳐、冰蟹、冰层水母',
+      ocean:'远洋 (Open Ocean)', oceanDepth:'深度 30m+ | 各区域之间',
+      oceanDesc:'连接各区域的开阔海域。大型远洋和深海鱼出没。拖网航行可获额外渔获。',
+      oceanFish:'<strong>钓点：</strong>马罗-悬崖间通道、星池-海岸间通道、恶魔之脊深水区 <strong>|</strong> 月鱼、翻车鱼、鼠尾鳕、腔棘鱼、吞噬鳗、巨型鱿鱼、皇带鱼'
+    },
+    quests: {
+      title:'任务与NPC攻略', desc:'主线围绕收藏家（The Collector）展开，共 5 个圣物。<span style="color:var(--danger);">含剧透，已做折叠处理。</span>',
+      npcTitle:'NPC 目录', mainTitle:'主线流程', sideTitle:'支线任务',
+      questRel:'相关任务',
+      step:'第', stepUnit:'步',
+      s1t:'马罗群岛 — 起步',
+      s1d:'大马罗港口找鱼贩（Fishmonger）对话，学会钓鱼和卖鱼。然后去黑石岛（Blackstone Isle）见收藏家（Collector），接第一个圣物任务。',
+      s2t:'圣物一：音乐盒 — 马罗群岛',
+      s2d:'收藏家给的位置在马罗群岛的一处沉船附近。发动疏浚器（Dredge）将沉船周围的淤泥清除，获得<strong>音乐盒</strong>。交回收藏家，解锁远洋鱼竿和下一个区域。',
+      s3t:'圣物二：戒指 — 狂风悬崖',
+      s3d:'前往狂风悬崖，沿途与隐士和沉船幸存者对话。戒指在海蛇巢穴深处的一艘沉船中，需要小心避开海蛇。获得<strong>戒指</strong>后交回收藏家。',
+      s4t:'圣物三：项链 — 星池',
+      s4d:'到达星池后找到研究员（Researcher），帮助她启动驱怪装置发电机。装置启动后中央深坑安全，潜入深坑底部找到<strong>项链</strong>。深坑内需要深渊鱼竿。',
+      s5t:'圣物四：怀表 — 扭曲海岸',
+      s5d:'进入红树林沼泽，在废弃营地附近找到<strong>怀表</strong>。此区域需要红树林鱼竿。注意沼泽中有变异生物，雾气降低能见度。',
+      s6t:'圣物五：王冠 — 恶魔之脊',
+      s6d:'最终区域。需要火山鱼竿和深渊鱼竿。在古神庙深处获得<strong>王冠</strong>。这里会遇到狂热信徒，他们对剧情有重要影响。',
+      s7step:'第 7 步 · 结局', s7t:'最终选择',
+      s7dA:'<p style="margin-bottom:8px;"><strong style="color:var(--accent);">结局 A（好结局）：</strong>将王冠交给收藏家后，选择<strong>拒绝他的最终请求</strong>。你会得知收藏家的真实身份——他是沉船的亡魂，在寻找复活妻子的方法。拒绝后，收藏家消失，你带着真相离开。</p><p><strong style="color:var(--danger);">结局 B（坏结局）：</strong>如果你<strong>接受了收藏家的请求</strong>，他会让你把圣物投入海中。这会引发一本禁忌之书的召唤仪式，收藏家与亡妻团聚，但代价是你的船被深海吞噬。世界将被迷雾笼罩。</p>',
+      spoilerShow:'▼ 显示结局（剧透）', spoilerHide:'▲ 隐藏结局',
+      sqFishmonger:'🐟 鱼贩的订单', sqFishmongerSub:'Fishmonger · 大马罗', sqFishmongerFlow:'鱼贩会定期要特定种类的鱼，完成订单提升好感度。关系越高，收购价越高。', sqFishmongerReward:'提升鱼贩收购价格（最高 +50%）',
+      sqResearcher:'🔬 研究员的采样', sqResearcherSub:'Researcher · 星池 / 旧要塞', sqResearcherFlow:'研究员在旧要塞（马罗群岛东北）和星池都有实验室。她会要求你捕获特定鱼类供研究。完成一定数量后解锁特殊装备。', sqResearcherReward:'研究零件 + 特殊鱼竿升级蓝图',
+      sqCastaway:'🪝 沉船幸存者的补给', sqCastawaySub:'Castaway · 狂风悬崖', sqCastawayFlow:'在狂风悬崖找到被困在礁石上的幸存者。他需要食物和物资。每次给他送补给，他会告诉你更多关于这一带沉船和海蛇的信息。', sqCastawayReward:'研究零件 + 沉船位置情报',
+      sqAirman:'✈️ 飞行员的零件', sqAirmanSub:'Airman · 扭曲海岸', sqAirmanFlow:'在扭曲海岸找到坠机飞行员。他需要散落在沼泽各处的飞机零件。零件分散在多个位置，需要在沼泽中仔细搜寻。', sqAirmanReward:'大量研究零件 + 特殊装备',
+      sqLighthouse:'🕯️ 灯塔看守人', sqLighthouseSub:'Lighthouse Keeper · 各地灯塔', sqLighthouseFlow:'游戏中散布着多个灯塔，每个灯塔有一位看守人。与他们对话可以获得周边区域的线索和隐藏沉船位置。', sqLighthouseReward:'地图标记 + 隐藏钓点解锁',
+      sqHooded:'🎭 兜帽人', sqHoodedSub:'Hooded Figures · 各区域', sqHoodedFlow:'各区域隐藏着 6 个兜帽人，他们会出高价收购特定鱼类。每个兜帽人只出现一次，卖给他们鱼后会消失。选择卖不卖影响理智值和剧情。', sqHoodedReward:'高价收购（远超市价）但每次仅限一种鱼',
+      sqMerchant:'🐚 旅商人的宝物', sqMerchantSub:'Travelling Merchant · 随机出现', sqMerchantFlow:'旅商人随机出现在各港口，出售稀有物品（研究零件、特殊诱饵、装饰品）。每次出现货物不同，建议每次遇到都检查。', sqMerchantReward:'研究零件 / 畸变诱饵 / 船体装饰',
+      sqIce:'🧊 冰区探险队', sqIceSub:'Ice Expedition · 苍白之域 DLC', sqIceFlow:'DLC 专属剧情。苍白之域有一支遇险的探险队，帮助他们完成冰区探索任务，了解冰层之下的秘密。', sqIceReward:'冰区鱼竿蓝图 + 破冰船升级 + 独有装备',
+      taskFlow:'任务流程', reward:'奖励'
+    },
+    faq: {
+      title:'常见问题',
+      q1:'如何钓畸变鱼？',
+      a1:'畸变鱼（Aberrations）是普通鱼的变异版本，绿色发光外观。<strong>夜间 + 低理智值</strong>会显著提高概率。使用"畸变诱饵"（Aberrated Bait）可进一步提升概率。每种普通鱼都有对应的畸变形态，售价约为普通的 3 倍。',
+      q2:'研究零件怎么获取？',
+      a2:'① 完成 NPC 任务奖励；② 各区域探索捡取蓝色发光物品；③ 商人处购买（限量）；④ 拖网偶尔捕获。建议优先解锁引擎和鱼竿。',
+      q3:'理智值（Panic）有什么影响？',
+      a3:'低理智值会：① 提高畸变鱼出现概率（有利）；② 出现幻觉和假障碍物；③ 夜间被海鸥攻击概率增加；④ 特定剧情触发特殊事件。睡觉可恢复。',
+      q4:'鱼卖给谁最划算？',
+      a4:'鱼贩（Fishmonger）基础价最高。收藏家（Collector）高价收稀有/任务鱼。拖网小鱼统一卖鱼贩即可。同一个NPC卖得越多，关系越好，收购价也越高。',
+      q5:'升级优先级建议？',
+      a5:'① 引擎（跑图效率决定一切）；② 鱼竿种类（解锁更多可钓鱼类）；③ 货舱容量；④ 拖网（挂机收益）；⑤ 灯光（夜间安全）。蟹笼回报率低，最后升。',
+      q6:'游戏主线多长时间？',
+      a6:'纯主线约 8-12 小时。全收集（全鱼类 + 全畸变 + 全任务）约 20-30 小时。DLC 苍白之域加 3-5 小时。有两个结局，取决于最终选择。',
+      q7:'如何快速赚钱？',
+      a7:'① 拖网挂机：安装拖网后在区域间航行自动捕获小鱼，一趟能赚 $50-100；② 夜间+低理智刷畸变鱼，售价 3 倍；③ 完成鱼贩订单提升好感，收购价最高 +50%；④ 兜帽人高价收购特定鱼（但仅一次）。初期推荐先升级拖网。',
+      q8:'拖网和蟹笼有什么区别？',
+      a8:'<strong>拖网</strong>：装在船尾，航行中自动捕获小鱼/水母，主动收益。容量有限，满后需手动取出。<strong>蟹笼</strong>：放在水中，8-12 小时后自动捕获甲壳类。被动收益，需要记住位置回来收。拖网效率更高，蟹笼适合顺手放几个。',
+      q9:'游戏怎么存档？',
+      a9:'在任意港口停靠即可自动存档。海上不能存档。如果你在海上沉船了，会回到上一个港口存档点。建议每次出海前和回来后都在港口触发存档。',
+      q10:'船损坏了怎么修？',
+      a10:'停靠在任意港口的造船厂（Shipwright），支付费用即可修复。船体耐久度显示在屏幕左上角。严重损坏会影响航行速度和稳定性。如果耐久度归零，船会沉没并回到上一个港口存档点。'
+    },
+    footer: { text:'DREDGE 攻略站 · 数据基于游戏版本 1.5+ · 由玩家社区维护' },
+    timeLabel: { day:'白天', night:'夜晚', any:'任意时间' },
+    depthLabel: { shallow:'浅水 0-5m', deep:'深水 5m+' },
+    typeLabel: { coastal:'沿海', oceanic:'远洋', mangrove:'红树林', volcanic:'火山', ice:'冰区', abyssal:'深海', hadal:'超深渊' },
+    methodLabel: { rod:'鱼竿', trawl:'拖网', pot:'蟹笼' },
+    locations: {
+      '马罗群岛':'马罗群岛','狂风悬崖':'狂风悬崖','星池':'星池','扭曲海岸':'扭曲海岸','恶魔之脊':'恶魔之脊','苍白之域':'苍白之域','远洋':'远洋'
+    },
+    npcTag: { shop:'商店', quest:'支线', story:'主线', dlc:'DLC' }
+  },
+
+  // ── English ───────────────────────
+  en: {
+    nav: { fish:'Fish Guide', equip:'Equipment', areas:'Areas', quests:'Quests', faq:'FAQ' },
+    fish: {
+      title:'Fish Encyclopedia', desc:'All catchable fish with specific locations and methods. <span style="color:#c084fc;">Purple border</span> = has aberration form. Click a card to expand details.',
+      search:'Search fish or location...', filterLoc:'Location', filterTime:'Time', filterMethod:'Method', filterDepth:'Depth', filterType:'Type',
+      allLoc:'All Locations', allTime:'All Times', allMethod:'All Methods', allDepth:'All Depths', allType:'All Types',
+      day:'Day', night:'Night', anytime:'Any', shallow:'Shallow 0-5m', deep:'Deep 5m+',
+      rod:'Rod', trawl:'Trawl', pot:'Crab Pot',
+      coastal:'Coastal', oceanic:'Oceanic', mangrove:'Mangrove', volcanic:'Volcanic', ice:'Ice', abyssal:'Abyssal', hadal:'Hadal',
+      reset:'Reset', abOnly:'Aberrations Only', showing:'Showing', of:'/', fishUnit:'fish',
+      noResult:'No fish match', noResultHint:'Try adjusting the filters',
+      expandHint:'Click to expand ▼', collapseHint:'Click to collapse ▲',
+      detailTitle:'Detailed Location Info', subLocTitle:'Specific Spots', condTitle:'Conditions', priceTitle:'Price Comparison', tipTitle:'Fishing Tips',
+      methodLabel:'Method', equipLabel:'Equipment', sizeLabel:'Inventory Size', priceLabel:'Normal Price', abPriceLabel:'Aberration Price',
+      trawlGuideTitle:'🕸️ Trawl Net Guide',
+      trawlGuideText:'Mount on the stern, <strong>automatically catches</strong> small fish and jellyfish while sailing.<br>· Basic Net: 3 slots, shallow only<br>· Reinforced Net: 5 slots, shallow + deep<br>· Large Net: 7 slots, all depths<br>Net stops when full — manually empty your catch.',
+      potGuideTitle:'🦀 Crab Pot Guide',
+      potGuideText:'Place in water, <strong>auto-captures after 8-12 hours</strong> crustaceans and worms.<br>· Basic Pot: 3 day durability, shallow only<br>· Reinforced Pot: 5 day durability, all depths<br>Deep water accelerates degradation. Sleep at any dock while waiting.<br>Retrieve before it breaks or lose both pot and catch.'
+    },
+    equip: {
+      title:'Equipment & Upgrades', desc:'Research Parts are obtained through NPC quests and exploration. Prioritize rods and engines.',
+      cat:'Category', name:'Equipment', effect:'Effect', unlock:'Unlock',
+      catRod:'Rod', catEngine:'Engine', catTrawl:'Trawl', catPot:'Crab Pot', catLight:'Light', catHull:'Hull',
+      coastalRod:'Coastal Rod', coastalRodEff:'Catch coastal fish, basic speed', coastalRodUnlock:'Default',
+      oceanicRod:'Oceanic Rod', oceanicRodEff:'Catch oceanic fish', oceanicRodUnlock:'Research Parts',
+      mangroveRod:'Mangrove Rod', mangroveRodEff:'Catch mangrove fish', mangroveRodUnlock:'Twisted Strand story',
+      abyssalRod:'Abyssal Rod', abyssalRodEff:'Catch deep-sea fish', abyssalRodUnlock:'Research Parts',
+      hadalRod:'Hadal Rod', hadalRodEff:'Catch hadal fish', hadalRodUnlock:'Devil\'s Spine story',
+      volcanicRod:'Volcanic Rod', volcanicRodEff:'Catch volcanic fish', volcanicRodUnlock:'Devil\'s Spine',
+      iceRod:'Ice Rod', iceRodEff:'Catch ice region fish', iceRodUnlock:'Pale Reach DLC',
+      engine:'Basic → Reinforced → Turbo', engineEff:'Increase speed (5/10/15/20/25/30 kn)', engineUnlock:'Research Parts',
+      net:'Basic → Reinforced → Large', netEff:'Auto-catch while sailing', netUnlock:'Research Parts',
+      pot:'Basic Pot → Reinforced Pot', potEff:'Auto-catch crustaceans, higher durability', potUnlock:'Research Parts',
+      light:'Boat Light → Bright Light → Spotlight', lightEff:'Night vision, slow panic gain', lightUnlock:'Research Parts',
+      hull:'Basic → Medium → Large', hullEff:'Increase cargo (4×4 → 5×5 → 6×6 etc)', hullUnlock:'Research Parts'
+    },
+    areas: {
+      title:'Area Overview', desc:'6 major regions in story order.',
+      marrows:'The Marrows', marrowsDepth:'Depth 0-5m | Starting Area',
+      marrowsDesc:'Safe shallow waters. Two main islands: Greater Marrow and Blackstone Isle. NPCs: Fishmonger, Collector, Researcher.',
+      marrowsFish:'<strong>Spots:</strong> Greater Marrow coast, Blackstone Isle waters, The Channel <strong>|</strong> Blue Mackerel, Cod, Arrow Squid, Grey Mullet, Stingray, Gulf Flounder, Red Snapper, Black Sea Bass, Common Crab, Fiddler Crab',
+      gale:'Gale Cliffs', galeDepth:'Depth 5-15m | Dredge required',
+      galeDesc:'Narrow canyon passages patrolled by a giant serpent. Sail close to cliff walls. NPCs: Hermit, Castaway.',
+      galeFish:'<strong>Spots:</strong> Northern Canyon, Southern Narrows, Shipwreck, Serpent Lair <strong>|</strong> Oceanic Perch, Tiger Mackerel, Stonefish, Black Grouper, Conger Eel, Devil Ray, Moray Eel, Barracuda, Oarfish',
+      basin:'Stellar Basin', basinDepth:'Depth 10-30m | Dredge required',
+      basinDesc:'Open shallow sea with a massive crater at center harboring a monster. Activate the generator repulsor device. NPCs: Researcher, Astronomer.',
+      basinFish:'<strong>Spots:</strong> Eastern Shallows, Crater Rim, Western Reef <strong>|</strong> Hammerhead Shark, Shortfin Mako, Ghost Shark, Sailfish, Sturgeon, Starfish, Aurora Jellyfish, Glass Squid',
+      strand:'Twisted Strand', strandDepth:'Depth 5-10m | Mangrove Swamp',
+      strandDesc:'Dense mangrove swamp, narrow winding channels, thick fog. Mutated creatures roam. NPCs: Hermit, Airman.',
+      strandFish:'<strong>Spots:</strong> Northern Mangroves, Abandoned Camp, Southern Swamp <strong>|</strong> Mangrove Snapper, Tarpon, Alligator Gar, Longfin Eel, Catfish, Gar, Horseshoe Crab',
+      spine:'Devil\'s Spine', spineDepth:'Depth 20-50m | Volcanic Zone',
+      spineDesc:'Volcanic archipelago with boiling waters. Complete the ancient temple storyline. NPCs: Fanatic, Archaeologist.',
+      spineFish:'<strong>Spots:</strong> Northern Volcanoes, Temple Ruins, Southern Boiling Waters <strong>|</strong> Volcanic Snapper, Armored Searobin, Lava Eel, Firefly Squid, Anglerfish, Volcanic Grouper, Pompeii Worm',
+      pale:'The Pale Reach', paleDepth:'Depth 10-40m | DLC Ice Region',
+      paleDesc:'Frozen polar waters, icebreaker upgrade required. Unique freezing mechanic. NPC: Ice Expedition.',
+      paleFish:'<strong>Spots:</strong> Northern Ice Fields, Southern Glaciers, Wreck Site <strong>|</strong> Icefish, Polar Cod, Frilled Shark, Sleeper Shark, Ice Skate, Ice Crab, Ice Jellyfish',
+      ocean:'Open Ocean', oceanDepth:'Depth 30m+ | Between Regions',
+      oceanDesc:'Open waters connecting all regions. Large pelagic and deep-sea fish. Trawl while traveling for extra catch.',
+      oceanFish:'<strong>Spots:</strong> Marrows-Gale Passage, Basin-Strand Passage, Devil\'s Spine Deep <strong>|</strong> Moonfish, Sunfish, Rattail, Coelacanth, Gulper Eel, Giant Squid, Oarfish King'
+    },
+    quests: {
+      title:'Quests & NPCs', desc:'Main story revolves around The Collector and 5 relics. <span style="color:var(--danger);">Spoilers hidden behind toggles.</span>',
+      npcTitle:'NPC Directory', mainTitle:'Main Story', sideTitle:'Side Quests',
+      questRel:'Related Quests',
+      step:'Step', stepUnit:'',
+      s1t:'The Marrows — Getting Started',
+      s1d:'Visit the Fishmonger at Greater Marrow to learn fishing and selling. Then go to Blackstone Isle to meet The Collector and accept the first relic quest.',
+      s2t:'Relic I: Music Box — The Marrows',
+      s2d:'The Collector marks a shipwreck. Use the Dredge to clear silt around it, revealing the <strong>Music Box</strong>. Return it to unlock the Oceanic Rod and the next region.',
+      s3t:'Relic II: Ring — Gale Cliffs',
+      s3d:'Head to Gale Cliffs. Talk to the Hermit and Castaway along the way. The Ring is in a wreck deep within the Serpent Lair — carefully avoid the serpent. Return the <strong>Ring</strong>.',
+      s4t:'Relic III: Necklace — Stellar Basin',
+      s4d:'Find the Researcher at Stellar Basin and help activate the generator repulsor. Once the crater is safe, dive to the bottom for the <strong>Necklace</strong>. Requires Abyssal Rod.',
+      s5t:'Relic IV: Pocket Watch — Twisted Strand',
+      s5d:'Enter the mangrove swamp. Find the <strong>Pocket Watch</strong> near the Abandoned Camp. Requires Mangrove Rod. Watch for mutated creatures and low visibility fog.',
+      s6t:'Relic V: Crown — Devil\'s Spine',
+      s6d:'Final region. Requires Volcanic and Abyssal Rods. Retrieve the <strong>Crown</strong> from the ancient temple depths. The Fanatics here play a key story role.',
+      s7step:'Step 7 · Ending', s7t:'The Final Choice',
+      s7dA:'<p style="margin-bottom:8px;"><strong style="color:var(--accent);">Ending A (Good):</strong> After delivering the Crown, <strong>refuse his final request</strong>. You learn the Collector\'s true identity — a drowned soul seeking to revive his wife. He vanishes, and you sail away with the truth.</p><p><strong style="color:var(--danger);">Ending B (Bad):</strong> If you <strong>accept his request</strong>, you throw the relics into the sea. A forbidden ritual summons a tome, reuniting the Collector with his wife — at the cost of your ship being consumed by the depths. The world is shrouded in mist.</p>',
+      spoilerShow:'▼ Reveal Ending (Spoiler)', spoilerHide:'▲ Hide Ending',
+      sqFishmonger:'🐟 Fishmonger\'s Orders', sqFishmongerSub:'Fishmonger · Greater Marrow', sqFishmongerFlow:'The Fishmonger periodically requests specific fish. Complete orders to improve reputation. Higher reputation = higher buy prices.', sqFishmongerReward:'Buy price increased (up to +50%)',
+      sqResearcher:'🔬 Researcher\'s Samples', sqResearcherSub:'Researcher · Stellar Basin / Old Fortress', sqResearcherFlow:'Found at the Old Fortress (NE Marrows) and later Stellar Basin. She requests specific fish for research. Complete enough to unlock special equipment.', sqResearcherReward:'Research Parts + special rod blueprints',
+      sqCastaway:'🪝 Castaway\'s Supplies', sqCastawaySub:'Castaway · Gale Cliffs', sqCastawayFlow:'Find the survivor stranded on the rocks in Gale Cliffs. He needs food and supplies. Each delivery reveals more about the shipwrecks and serpent.', sqCastawayReward:'Research Parts + shipwreck intel',
+      sqAirman:'✈️ Airman\'s Parts', sqAirmanSub:'Airman · Twisted Strand', sqAirmanFlow:'Find the crashed pilot in Twisted Strand. He needs plane parts scattered throughout the swamp. Search carefully across multiple locations.', sqAirmanReward:'Many Research Parts + special equipment',
+      sqLighthouse:'🕯️ Lighthouse Keeper', sqLighthouseSub:'Lighthouse Keeper · Various Lighthouses', sqLighthouseFlow:'Lighthouses are scattered across the map. Each keeper shares clues about the surrounding waters and hidden shipwreck locations.', sqLighthouseReward:'Map markers + hidden fishing spots',
+      sqHooded:'🎭 Hooded Figures', sqHoodedSub:'Hooded Figures · All Regions', sqHoodedFlow:'6 hidden hooded figures across regions offer high prices for specific fish. Each appears only once and disappears after the trade. Your choice affects panic and story.', sqHoodedReward:'Premium prices (far above market) — one fish each',
+      sqMerchant:'🐚 Travelling Merchant', sqMerchantSub:'Travelling Merchant · Random docks', sqMerchantFlow:'Randomly appears at various docks. Sells rare items (Research Parts, special bait, decorations). Inventory changes each visit — always check.', sqMerchantReward:'Research Parts / Aberrated Bait / Ship decorations',
+      sqIce:'🧊 Ice Expedition', sqIceSub:'Ice Expedition · Pale Reach DLC', sqIceFlow:'DLC storyline. A stranded expedition team in the Pale Reach. Help them complete ice exploration tasks and uncover the secrets beneath the ice.', sqIceReward:'Ice Rod blueprint + Icebreaker upgrade + unique equipment',
+      taskFlow:'Quest Flow', reward:'Rewards'
+    },
+    faq: {
+      title:'FAQ',
+      q1:'How to catch Aberrations?',
+      a1:'Aberrations are mutated versions of normal fish with a green glow. <strong>Nighttime + low Panic</strong> significantly increases spawn rate. Use "Aberrated Bait" for even higher chance. Every normal fish has a corresponding aberration worth ~3x more.',
+      q2:'How to get Research Parts?',
+      a2:'① NPC quest rewards; ② Explore regions for blue-glowing pickups; ③ Buy from merchants (limited stock); ④ Rare trawl catches. Prioritize unlocking engines and rods.',
+      q3:'What does Panic do?',
+      a3:'Low Panic causes: ① Higher aberration spawn rate (beneficial); ② Hallucinations and false obstacles; ③ Increased seagull attacks at night; ④ Special story events. Sleep to recover.',
+      q4:'Who pays the most for fish?',
+      a4:'Fishmonger has the highest base prices. The Collector pays premium for rare/quest fish. Sell trawl fish to Fishmonger. The more you sell to one NPC, the better your reputation and prices.',
+      q5:'Upgrade priority?',
+      a5:'① Engine (speed is everything); ② Rod variety (unlock more fish); ③ Hull capacity; ④ Trawl net (passive income); ⑤ Lights (night safety). Crab pots have low ROI, upgrade last.',
+      q6:'How long is the game?',
+      a6:'Main story: ~8-12 hours. 100% completion (all fish + aberrations + quests): ~20-30 hours. Pale Reach DLC adds ~3-5 hours. Two endings depending on your final choice.',
+      q7:'How to make money fast?',
+      a7:'① Trawl while traveling: passive $50-100 per trip; ② Night + low panic for aberration farming (3x value); ③ Complete Fishmonger orders to boost buy prices up to +50%; ④ Hooded Figures pay premium for specific fish (one-time only). Early game: prioritize trawl net upgrades.',
+      q8:'Trawl Net vs Crab Pot — what\'s the difference?',
+      a8:'<strong>Trawl Net</strong>: Mounted on stern, passively catches small fish/jellyfish while sailing. Active income. Limited capacity, manually empty when full. <strong>Crab Pot</strong>: Place in water, auto-captures crustaceans after 8-12 hours. Passive income. Must remember location and retrieve before it breaks. Trawling is more efficient; pots are set-and-forget.',
+      q9:'How does saving work?',
+      a9:'Dock at any port to auto-save. You cannot save at sea. If your ship sinks, you revert to the last port save. Always dock before and after each voyage to trigger a save point.',
+      q10:'How to repair ship damage?',
+      a10:'Visit the Shipwright at any port and pay for repairs. Hull durability is shown in the top-left HUD. Heavy damage reduces speed and handling. If durability reaches zero, your ship sinks and you return to the last port save.'
+    },
+    footer: { text:'DREDGE Strategy Guide · Based on game version 1.5+ · Community maintained' },
+    timeLabel: { day:'Day', night:'Night', any:'Any' },
+    depthLabel: { shallow:'Shallow 0-5m', deep:'Deep 5m+' },
+    typeLabel: { coastal:'Coastal', oceanic:'Oceanic', mangrove:'Mangrove', volcanic:'Volcanic', ice:'Ice', abyssal:'Abyssal', hadal:'Hadal' },
+    methodLabel: { rod:'Rod', trawl:'Trawl', pot:'Crab Pot' },
+    locations: {
+      '马罗群岛':'The Marrows','狂风悬崖':'Gale Cliffs','星池':'Stellar Basin','扭曲海岸':'Twisted Strand','恶魔之脊':'Devil\'s Spine','苍白之域':'Pale Reach','远洋':'Open Ocean'
+    },
+    npcTag: { shop:'Shop', quest:'Side', story:'Main', dlc:'DLC' }
+  },
+
+  // ── 日本語 ─────────────────────────
+  ja: {
+    nav: { fish:'魚図鑑', equip:'装備', areas:'エリア', quests:'クエスト', faq:'FAQ' },
+    fish: {
+      title:'魚類図鑑', desc:'全魚種データ、釣り場と捕獲方法付き。<span style="color:#c084fc;">紫枠</span> = 異変種あり。クリックで詳細展開。',
+      search:'魚名や釣り場で検索...', filterLoc:'エリア', filterTime:'時間', filterMethod:'方法', filterDepth:'水深', filterType:'種類',
+      allLoc:'全エリア', allTime:'全時間', allMethod:'全方法', allDepth:'全水深', allType:'全種類',
+      day:'昼', night:'夜', anytime:'常時', shallow:'浅瀬 0-5m', deep:'深海 5m+',
+      rod:'釣竿', trawl:'トロール網', pot:'カニ籠',
+      coastal:'沿岸', oceanic:'遠洋', mangrove:'マングローブ', volcanic:'火山', ice:'氷域', abyssal:'深海', hadal:'超深海',
+      reset:'リセット', abOnly:'異変種のみ', showing:'表示', of:'/', fishUnit:'種',
+      noResult:'一致する魚がありません', noResultHint:'フィルター条件を変えてみてください',
+      expandHint:'クリックで展開 ▼', collapseHint:'クリックで折りたたむ ▲',
+      detailTitle:'詳細釣り場情報', subLocTitle:'具体的な釣り場', condTitle:'条件', priceTitle:'価格比較', tipTitle:'釣り方のコツ',
+      methodLabel:'捕獲方法', equipLabel:'必要装備', sizeLabel:'収納サイズ', priceLabel:'通常価格', abPriceLabel:'異変価格',
+      trawlGuideTitle:'🕸️ トロール網ガイド',
+      trawlGuideText:'船尾に装着、航海中に<strong>自動で小魚やクラゲを捕獲</strong>。<br>· 基本網：3スロット、浅瀬のみ<br>· 強化網：5スロット、浅瀬+深海<br>· 大型網：7スロット、全水深<br>満杯になると停止、手動で回収が必要。',
+      potGuideTitle:'🦀 カニ籠ガイド',
+      potGuideText:'水中に設置、<strong>8-12時間後に甲殻類や虫類を自動捕獲</strong>。<br>· 基本籠：耐久3日、浅瀬のみ<br>· 強化籠：耐久5日、全水深<br>深海では劣化が早い。設置後は港で休んで待てる。<br>破損前に回収しないと籠も漁獲も失われる。'
+    },
+    equip: {
+      title:'装備とアップグレード', desc:'研究パーツはNPCクエストや探索で入手。釣竿とエンジンを優先。',
+      cat:'カテゴリ', name:'装備', effect:'効果', unlock:'解除条件',
+      catRod:'釣竿', catEngine:'エンジン', catTrawl:'トロール網', catPot:'カニ籠', catLight:'照明', catHull:'船倉',
+      coastalRod:'沿岸釣竿 (Coastal)', coastalRodEff:'沿岸魚を捕獲、基本速度', coastalRodUnlock:'初期装備',
+      oceanicRod:'遠洋釣竿 (Oceanic)', oceanicRodEff:'遠洋魚を捕獲', oceanicRodUnlock:'研究パーツ',
+      mangroveRod:'マングローブ釣竿 (Mangrove)', mangroveRodEff:'マングローブ魚を捕獲', mangroveRodUnlock:'ツイステッドストランド進行',
+      abyssalRod:'深海釣竿 (Abyssal)', abyssalRodEff:'深海魚を捕獲', abyssalRodUnlock:'研究パーツ',
+      hadalRod:'超深海釣竿 (Hadal)', hadalRodEff:'超深海魚を捕獲', hadalRodUnlock:'デビルズスパイン進行',
+      volcanicRod:'火山釣竿 (Volcanic)', volcanicRodEff:'火山域の魚を捕獲', volcanicRodUnlock:'デビルズスパイン',
+      iceRod:'氷域釣竿 (Ice)', iceRodEff:'ペイルリーチの魚を捕獲', iceRodUnlock:'ペイルリーチDLC',
+      engine:'基本 → 強化 → ターボ', engineEff:'速度向上（5/10/15/20/25/30ノット）', engineUnlock:'研究パーツ',
+      net:'基本 → 強化 → 大型網', netEff:'航海中に自動捕獲', netUnlock:'研究パーツ',
+      pot:'基本籠 → 強化籠', potEff:'甲殻類を自動捕獲、耐久向上', potUnlock:'研究パーツ',
+      light:'船灯 → 強化灯 → サーチライト', lightEff:'夜間視界、パニック上昇抑制', lightUnlock:'研究パーツ',
+      hull:'基本 → 中型 → 大型船倉', hullEff:'積載量増加（4×4 → 5×5 → 6×6）', hullUnlock:'研究パーツ'
+    },
+    areas: {
+      title:'エリア概要', desc:'ストーリー順に6つの主要エリア。',
+      marrows:'マロウ諸島 (The Marrows)', marrowsDepth:'水深 0-5m | 開始エリア',
+      marrowsDesc:'安全な浅瀬。グレーターマロウとブラックストーン島。NPC：魚屋、コレクター、研究者。',
+      marrowsFish:'<strong>釣り場：</strong>グレーターマロウ沿岸、ブラックストーン島周辺、海峡 <strong>|</strong> ブルーマカレル、タラ、ヤリイカ、ボラ、エイ、ヒラメ、レッドスナッパー、クロスズキ',
+      gale:'ゲイルクリフ (Gale Cliffs)', galeDepth:'水深 5-15m | 浚渫機必要',
+      galeDesc:'狭い峡谷水路、巨大海蛇が巡回。崖沿いを航行。NPC：隠者、漂流者。',
+      galeFish:'<strong>釣り場：</strong>北峡谷、南狭路、沈船地帯、海蛇の巣 <strong>|</strong> オーシャニックパーチ、タイガーマカレル、ストーンフィッシュ、クロハタ、アナゴ、デビルレイ、ウツボ、バラクーダ、リュウグウノツカイ',
+      basin:'ステラーベイスン (Stellar Basin)', basinDepth:'水深 10-30m | 浚渫機必要',
+      basinDesc:'開けた浅海、中央に巨大クレーターと怪物。発電機で撃退装置を起動。NPC：研究者、天文学者。',
+      basinFish:'<strong>釣り場：</strong>東浅瀬、クレーター縁、西暗礁 <strong>|</strong> ハンマーヘッドシャーク、アオザメ、ゴーストシャーク、バショウカジキ、チョウザメ、ヒトデ、オーロラクラゲ',
+      strand:'ツイステッドストランド (Twisted Strand)', strandDepth:'水深 5-10m | マングローブ湿地',
+      strandDesc:'密なマングローブ湿地、狭く曲がりくねった水路、濃霧。変異生物出没。NPC：隠者、パイロット。',
+      strandFish:'<strong>釣り場：</strong>北マングローブ、放棄キャンプ、南湿地 <strong>|</strong> マングローブスナッパー、ターポン、アリゲーターガー、ウナギ、ナマズ、ガー、カブトガニ',
+      spine:'デビルズスパイン (Devil\'s Spine)', spineDepth:'水深 20-50m | 火山地帯',
+      spineDesc:'火山群島、沸騰する水域。古代神殿の物語を完結。NPC：狂信者、考古学者。',
+      spineFish:'<strong>釣り場：</strong>北火山群、神殿水域、南沸騰域 <strong>|</strong> ボルカニックスナッパー、アーマードシーロビン、ラヴァイール、ホタルイカ、アンコウ、ボルカニックハタ',
+      pale:'ペイルリーチ (The Pale Reach)', paleDepth:'水深 10-40m | DLC 氷域',
+      paleDesc:'凍てつく極地水域、砕氷船が必要。独自の凍結メカニズム。NPC：氷域探検隊。',
+      paleFish:'<strong>釣り場：</strong>北氷原、南氷河、沈船水域 <strong>|</strong> アイスフィッシュ、ホッキョクダラ、ラブカ、スリーパーシャーク、アイススケート、アイスクラブ',
+      ocean:'遠洋 (Open Ocean)', oceanDepth:'水深 30m+ | エリア間',
+      oceanDesc:'全エリアを繋ぐ外洋。大型遠洋魚と深海魚。航海中のトロールで追加漁獲。',
+      oceanFish:'<strong>釣り場：</strong>マロウ-ゲイル間、ベイスン-ストランド間、デビルズスパイン深海 <strong>|</strong> マツカサウオ、マンボウ、ラットテイル、シーラカンス、フクロウナギ、ダイオウイカ、リュウグウノツカイ王'
+    },
+    quests: {
+      title:'クエストとNPC', desc:'メインストーリーはコレクターの5つの聖遺物。<span style="color:var(--danger);">ネタバレあり、折りたたみ済。</span>',
+      npcTitle:'NPC一覧', mainTitle:'メインストーリー', sideTitle:'サイドクエスト',
+      questRel:'関連クエスト',
+      step:'ステップ', stepUnit:'',
+      s1t:'マロウ諸島 — 始まり',
+      s1d:'グレーターマロウの魚屋から釣りと販売を学ぶ。ブラックストーン島でコレクターに会い、最初の聖遺物クエストを受注。',
+      s2t:'聖遺物I：オルゴール — マロウ諸島',
+      s2d:'コレクターが沈船の位置を示す。浚渫機で沈船周囲の泥を除去し<strong>オルゴール</strong>を入手。コレクターに渡すと遠洋釣竿と次エリアが解放。',
+      s3t:'聖遺物II：指輪 — ゲイルクリフ',
+      s3d:'ゲイルクリフへ向かう。隠者と漂流者と会話。指輪は海蛇の巣の奥深くの沈船にある。海蛇を避けて<strong>指輪</strong>を入手。',
+      s4t:'聖遺物III：ネックレス — ステラーベイスン',
+      s4d:'ステラーベイスンで研究者を見つけ、発電機の起動を手伝う。クレーターが安全になったら底に潜り<strong>ネックレス</strong>を入手。深海釣竿必要。',
+      s5t:'聖遺物IV：懐中時計 — ツイステッドストランド',
+      s5d:'マングローブ湿地に入る。放棄キャンプ付近で<strong>懐中時計</strong>を見つける。マングローブ釣竿必要。変異生物と濃霧に注意。',
+      s6t:'聖遺物V：王冠 — デビルズスパイン',
+      s6d:'最終エリア。火山釣竿と深海釣竿が必要。古代神殿の奥深くで<strong>王冠</strong>を入手。狂信者たちが重要な役割を果たす。',
+      s7step:'ステップ7 · エンディング', s7t:'最終選択',
+      s7dA:'<p style="margin-bottom:8px;"><strong style="color:var(--accent);">エンディングA（善）：</strong>王冠を渡した後、<strong>コレクターの最後の願いを拒否する</strong>。コレクターの正体——妻を蘇らせようとする溺死した魂——が明かされる。彼は消え、あなたは真実と共に去る。</p><p><strong style="color:var(--danger);">エンディングB（悪）：</strong><strong>願いを受け入れると</strong>、聖遺物を海に投げ入れる。禁断の書の儀式が発動し、コレクターは妻と再会するが、代償としてあなたの船は深海に飲み込まれる。世界は霧に包まれる。</p>',
+      spoilerShow:'▼ エンディングを表示（ネタバレ）', spoilerHide:'▲ エンディングを隠す',
+      sqFishmonger:'🐟 魚屋の注文', sqFishmongerSub:'魚屋 · グレーターマロウ', sqFishmongerFlow:'魚屋が定期的に特定の魚を要求。注文を完了すると好感度上昇。関係が良いほど買取価格が上がる。', sqFishmongerReward:'買取価格上昇（最大+50%）',
+      sqResearcher:'🔬 研究者のサンプル', sqResearcherSub:'研究者 · ステラーベイスン / 旧要塞', sqResearcherFlow:'旧要塞（マロウ北東）とステラーベイスンに研究所。特定の魚を研究用に要求。一定数完了で特殊装備解除。', sqResearcherReward:'研究パーツ + 特殊釣竿設計図',
+      sqCastaway:'🪝 漂流者の物資', sqCastawaySub:'漂流者 · ゲイルクリフ', sqCastawayFlow:'ゲイルクリフの岩礁に取り残された生存者。食料と物資が必要。物資を届けるたびに沈船と海蛇の情報を提供。', sqCastawayReward:'研究パーツ + 沈船位置情報',
+      sqAirman:'✈️ パイロットの部品', sqAirmanSub:'パイロット · ツイステッドストランド', sqAirmanFlow:'ツイステッドストランドで墜落したパイロット。湿地各所に散らばった飛行機の部品が必要。複数箇所を注意深く探索。', sqAirmanReward:'大量の研究パーツ + 特殊装備',
+      sqLighthouse:'🕯️ 灯台守', sqLighthouseSub:'灯台守 · 各地の灯台', sqLighthouseFlow:'各地に点在する灯台。灯台守は周辺海域の手がかりや隠れた沈船の位置を教えてくれる。', sqLighthouseReward:'マップマーカー + 隠し釣り場解放',
+      sqHooded:'🎭 フードの人物', sqHoodedSub:'フードの人物 · 全エリア', sqHoodedFlow:'各エリアに6人隠れているフードの人物。特定の魚を高額で買い取る。各1回限りで取引後消える。売るかどうかでパニックと物語に影響。', sqHoodedReward:'市場価格を大きく上回る高額買取 — 各1匹',
+      sqMerchant:'🐚 旅商人', sqMerchantSub:'旅商人 · ランダム出現', sqMerchantFlow:'各港にランダム出現。レアアイテム（研究パーツ、特殊餌、装飾品）を販売。出現ごとに品揃えが変わるので毎回チェック。', sqMerchantReward:'研究パーツ / 異変餌 / 船装飾',
+      sqIce:'🧊 氷域探検隊', sqIceSub:'氷域探検隊 · ペイルリーチ DLC', sqIceFlow:'DLC専用ストーリー。ペイルリーチで遭難した探検隊。氷域探索を手伝い、氷の下の秘密を解き明かす。', sqIceReward:'氷域釣竿設計図 + 砕氷船 + 固有装備',
+      taskFlow:'クエストの流れ', reward:'報酬'
+    },
+    faq: {
+      title:'よくある質問',
+      q1:'異変魚の釣り方は？',
+      a1:'異変魚（Aberrations）は通常魚の変異版で緑色に光る。<strong>夜間＋低パニック</strong>で出現率が大幅上昇。「異変餌」でさらに確率アップ。全通常魚に対応する異変種があり、約3倍の価格。',
+      q2:'研究パーツの入手方法は？',
+      a2:'① NPCクエスト報酬；② 各地域の探索（青く光るアイテム）；③ 商人から購入（数量限定）；④ トロール網で稀に捕獲。エンジンと釣竿を優先。',
+      q3:'パニックの影響は？',
+      a3:'低パニックの影響：① 異変魚の出現率上昇（有利）；② 幻覚や偽の障害物；③ 夜間のカモメ攻撃増加；④ 特定イベント発生。睡眠で回復。',
+      q4:'魚は誰に売るのがお得？',
+      a4:'魚屋の基本買取額が最高。コレクターはレア魚・クエスト魚を高額買取。トロールの小魚は魚屋へ。同じNPCに売るほど関係が良くなり価格上昇。',
+      q5:'アップグレードの優先順位は？',
+      a5:'① エンジン（移動効率が全て）；② 釣竿の種類（より多くの魚を解放）；③ 船倉容量；④ トロール網（パッシブ収入）；⑤ 照明（夜間安全）。カニ籠は効率低め、最後で良い。',
+      q6:'プレイ時間は？',
+      a6:'メイン約8-12時間。コンプリート（全魚＋全異変＋全クエスト）約20-30時間。DLCペイルリーチ追加3-5時間。最終選択で2つのエンディング。',
+      q7:'効率的なお金稼ぎは？',
+      a7:'① トロール網で航海中に自動捕獲（1回$50-100）；② 夜間＋低パニックで異変種狙い（3倍の価格）；③ 魚屋の注文を完了して買取価格最大+50%；④ フードの人物が特定の魚を高額買取（各1回限り）。初期はトロール網の強化がおすすめ。',
+      q8:'トロール網とカニ籠の違いは？',
+      a8:'<strong>トロール網</strong>：船尾に装着、航海中に小魚/クラゲを自動捕獲。能動的収入。容量限界あり。<strong>カニ籠</strong>：水中に設置、8-12時間後に甲殻類を自動捕獲。受動的収入。設置場所を覚えて壊れる前に回収が必要。トロール網の方が効率的。',
+      q9:'セーブ方法は？',
+      a9:'任意の港に停泊すると自動セーブ。海上ではセーブ不可。船が沈没すると最後の港セーブ地点に戻る。出航前と帰港後に必ず港に寄ってセーブを。',
+      q10:'船の修理方法は？',
+      a10:'任意の港の造船所で料金を支払って修理。船体耐久度は画面左上に表示。大きな損傷は速度と操縦性に影響。耐久度がゼロになると船は沈没し、最後の港セーブ地点に戻る。'
+    },
+    footer: { text:'DREDGE 攻略サイト · ゲームVer 1.5+対応 · コミュニティ運営' },
+    timeLabel: { day:'昼', night:'夜', any:'常時' },
+    depthLabel: { shallow:'浅瀬 0-5m', deep:'深海 5m+' },
+    typeLabel: { coastal:'沿岸', oceanic:'遠洋', mangrove:'マングローブ', volcanic:'火山', ice:'氷域', abyssal:'深海', hadal:'超深海' },
+    methodLabel: { rod:'釣竿', trawl:'トロール網', pot:'カニ籠' },
+    locations: {
+      '马罗群岛':'マロウ諸島','狂风悬崖':'ゲイルクリフ','星池':'ステラーベイスン','扭曲海岸':'ツイステッドストランド','恶魔之脊':'デビルズスパイン','苍白之域':'ペイルリーチ','远洋':'遠洋'
+    },
+    npcTag: { shop:'商店', quest:'サブ', story:'メイン', dlc:'DLC' }
+  }
+};
+
+function t(path) {
+  const keys = path.split('.');
+  let val = I18N[LANG];
+  for (const k of keys) { if (val == null) return path; val = val[k]; }
+  return val != null ? val : path;
+}
+
+// ── Language Switcher ──────────────
+function setLang(lang) {
+  LANG = lang;
+  localStorage.setItem('dredge-lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  document.documentElement.lang = {zh:'zh-CN',en:'en',ja:'ja'}[lang];
+  renderAll();
+}
+
+function renderAll() {
+  const fns = [
+    ['renderNav', renderNav],
+    ['renderFilters', renderFilters],
+    ['renderFish', ()=>renderFish(fishData)],
+    ['renderGuideBanner', renderGuideBanner],
+    ['renderEquipTable', renderEquipTable],
+    ['renderAreas', renderAreas],
+    ['renderNPCs', renderNPCs],
+    ['renderTimeline', renderTimeline],
+    ['renderSideQuests', renderSideQuests],
+    ['renderFAQ', renderFAQ],
+    ['data-i18n', ()=>{ document.querySelectorAll('[data-i18n]').forEach(el => { const val = t(el.dataset.i18n); if (val) el.innerHTML = val; }); }],
+  ];
+  for (const [name, fn] of fns) {
+    try { fn(); } catch(e) {
+      console.error('renderAll failed at', name, e);
+      const el = document.getElementById(name === 'data-i18n' ? 'fishGrid' : (name === 'renderFish' ? 'fishGrid' : name.replace('render','').toLowerCase()));
+      // Try to find a relevant container
+      const container = document.getElementById('fishGrid') || document.body;
+      container.innerHTML += '<div style="background:#300;color:#f88;padding:10px;margin:8px;border-radius:4px;">Error in ' + name + ': ' + e.message + '</div>';
+    }
+  }
+}
+
+// ── Nav ─────────────────────────────
+function renderNav() {
+  const nav = document.getElementById('mainNav');
+  const items = ['fish','equipment','areas','quests','faq'];
+  nav.innerHTML = items.map(k => `<a href="#${k}">${t('nav.'+k)}</a>`).join('');
+  nav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+      nav.querySelectorAll('a').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+    });
+  });
+}
+
+// ── Language Buttons ────────────────
+function renderLangSwitch() {
+  const container = document.getElementById('langSwitch');
+  const langs = [
+    { code:'zh', label:'中' },
+    { code:'en', label:'EN' },
+    { code:'ja', label:'日' }
+  ];
+  container.innerHTML = langs.map(l =>
+    `<button class="lang-btn${LANG===l.code?' active':''}" data-lang="${l.code}">${l.label}</button>`
+  ).join('');
+  container.querySelectorAll('.lang-btn').forEach(b => {
+    b.addEventListener('click', () => setLang(b.dataset.lang));
+  });
+}
+
+// ═══════════════════════════════════════
+// FISH DATA
+// ═══════════════════════════════════════
+const fishData = [
+  { name:"蓝鲭", latin:"Blue Mackerel", location:"马罗群岛", subLoc:"大马罗沿岸 / 海峡通道", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$8", ab:"吞噬蓝鲭", abVal:"$28", tip:"最常见的入门鱼，大马罗码头附近即可钓到。" },
+  { name:"鳕鱼", latin:"Atlantic Cod", location:"马罗群岛", subLoc:"大马罗沿岸 / 黑石岛周边", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$10", ab:"三眼鳕鱼", abVal:"$35", tip:"分布广泛，是所有区域的基础鱼种。" },
+  { name:"箭鱿", latin:"Arrow Squid", location:"马罗群岛", subLoc:"大马罗沿岸 / 黑石岛周边", time:"night", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$12", ab:"暗夜箭鱿", abVal:"$40", tip:"最常见的夜间鱼，初期刷钱选择之一。" },
+  { name:"灰鲻", latin:"Grey Mullet", location:"马罗群岛", subLoc:"海峡通道", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$9", ab:"扭曲灰鲻", abVal:"$32", tip:"体小价低，初期完成图鉴顺手捞即可。" },
+  { name:"黄貂鱼", latin:"Stingray", location:"马罗群岛", subLoc:"黑石岛周边", time:"night", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"3×2", value:"$15", ab:"幽灵黄貂鱼", abVal:"$50", tip:"扁平体型，注意货舱空间规划。" },
+  { name:"湾鲆", latin:"Gulf Flounder", location:"马罗群岛", subLoc:"大马罗沿岸", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×2", value:"$11", ab:"变异湾鲆", abVal:"$38" },
+  { name:"红鲷", latin:"Red Snapper", location:"马罗群岛", subLoc:"海峡通道 / 黑石岛周边", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$14", ab:"血眼红鲷", abVal:"$45", tip:"白天性价比最高的初期鱼。" },
+  { name:"黑鲈", latin:"Black Sea Bass", location:"马罗群岛", subLoc:"大马罗沿岸 / 黑石岛周边", time:"night", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$10", ab:"瘤状黑鲈", abVal:"$35" },
+  { name:"普通蟹", latin:"Common Crab", location:"马罗群岛", subLoc:"大马罗沿岸浅滩", time:"any", depth:"shallow", type:"coastal", method:"pot", rod:"蟹笼", size:"1×1", value:"$6", ab:"畸变蟹", abVal:"$20", tip:"蟹笼放浅水区即可，检查间隔约 8-12 小时。" },
+  { name:"招潮蟹", latin:"Fiddler Crab", location:"马罗群岛", subLoc:"大马罗沿岸浅滩", time:"any", depth:"shallow", type:"coastal", method:"pot", rod:"蟹笼", size:"1×1", value:"$8", ab:"巨型招潮蟹", abVal:"$25" },
+  { name:"鳀鱼", latin:"Anchovy", location:"马罗群岛", subLoc:"大马罗沿岸", time:"any", depth:"shallow", type:"coastal", method:"trawl", rod:"拖网", size:"1×1", value:"$5", tip:"拖网专属。最小的鱼之一，适合初期挂机拖网刷钱。" },
+  { name:"沙丁鱼", latin:"Sardine", location:"马罗群岛", subLoc:"大马罗沿岸 / 海峡通道", time:"any", depth:"shallow", type:"coastal", method:"trawl", rod:"拖网", size:"1×1", value:"$6", tip:"拖网专属。在马罗群岛水道中拖网即可。" },
+  { name:"鱿鱼", latin:"Squid", location:"马罗群岛", subLoc:"海峡通道 / 黑石岛周边", time:"night", depth:"shallow", type:"coastal", method:"trawl", rod:"拖网", size:"1×1", value:"$10", ab:"荧光鱿鱼", abVal:"$32", tip:"拖网专属。夜间在马罗群岛开阔水域拖网。" },
+  { name:"海蛞蝓", latin:"Sea Slug", location:"马罗群岛", subLoc:"黑石岛周边", time:"any", depth:"shallow", type:"coastal", method:"trawl", rod:"拖网", size:"1×1", value:"$7", tip:"拖网专属。贴岛屿边缘航行捕获概率更高。" },
+  // Gale Cliffs
+  { name:"大洋鲈", latin:"Oceanic Perch", location:"狂风悬崖", subLoc:"北侧峡谷 / 南侧窄道", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$14", ab:"骨刺大洋鲈", abVal:"$45", tip:"注意避开海蛇巡逻路线，贴峭壁走。" },
+  { name:"虎鲭", latin:"Tiger Mackerel", location:"狂风悬崖", subLoc:"北侧峡谷 / 南侧窄道", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$16", ab:"利齿虎鲭", abVal:"$52" },
+  { name:"石鱼", latin:"Stonefish", location:"狂风悬崖", subLoc:"北侧峡谷底部", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$18", ab:"毒刺石鱼", abVal:"$58" },
+  { name:"黑石斑", latin:"Black Grouper", location:"狂风悬崖", subLoc:"沉船区 / 海蛇巢穴", time:"night", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"3×2", value:"$22", ab:"巨口黑石斑", abVal:"$70", tip:"夜间在沉船附近概率更高。高风险高回报。" },
+  { name:"康吉鳗", latin:"Conger Eel", location:"狂风悬崖", subLoc:"南侧窄道 / 沉船区", time:"night", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"3×1", value:"$20", ab:"双头康吉鳗", abVal:"$65" },
+  { name:"鬼蝠", latin:"Devil Ray", location:"狂风悬崖", subLoc:"沉船区开阔水域", time:"night", depth:"shallow", type:"coastal", method:"rod", rod:"远洋鱼竿", size:"4×3", value:"$28", ab:"幽灵鬼蝠", abVal:"$90", tip:"体型大，需要远洋鱼竿。出现在沉船区外围较安全的位置。" },
+  { name:"海鳗", latin:"Moray Eel", location:"狂风悬崖", subLoc:"海蛇巢穴深水区", time:"night", depth:"deep", type:"coastal", method:"rod", rod:"远洋鱼竿", size:"3×1", value:"$25", ab:"利齿海鳗", abVal:"$80", tip:"深水区，需要远洋鱼竿。海蛇巢穴附近非常危险。" },
+  { name:"梭鱼", latin:"Barracuda", location:"狂风悬崖", subLoc:"北侧峡谷 / 南侧窄道", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"2×1", value:"$16", ab:"鬼面梭鱼", abVal:"$52" },
+  { name:"桨鱼", latin:"Oarfish", location:"狂风悬崖", subLoc:"沉船区深水处", time:"any", depth:"deep", type:"oceanic", method:"rod", rod:"远洋鱼竿", size:"4×1", value:"$35", ab:"蛇形桨鱼", abVal:"$110", tip:"体型极长（4格），是早期高价值鱼。任意时间都可钓。" },
+  { name:"岩蟹", latin:"Rock Crab", location:"狂风悬崖", subLoc:"北侧峡谷 / 南侧窄道浅滩", time:"any", depth:"shallow", type:"coastal", method:"pot", rod:"蟹笼", size:"1×1", value:"$10", ab:"石壳岩蟹", abVal:"$32", tip:"蟹笼专属。放在峡谷岩壁旁的浅水。" },
+  { name:"蛇鳞鱼", latin:"Serpent Scale", location:"狂风悬崖", subLoc:"海蛇巢穴水域", time:"any", depth:"shallow", type:"coastal", method:"trawl", rod:"拖网", size:"1×1", value:"$15", ab:"暗鳞蛇鳞鱼", abVal:"$48", tip:"拖网专属。在海蛇巢穴附近拖网有概率出，危险但回报不错。" },
+  // Stellar Basin
+  { name:"锤头鲨", latin:"Hammerhead Shark", location:"星池", subLoc:"东侧浅滩 / 中央深坑边缘", time:"day", depth:"shallow", type:"oceanic", method:"rod", rod:"远洋鱼竿", size:"4×2", value:"$45", ab:"双头锤头鲨", abVal:"$140", tip:"星池最值钱的白天鱼。先在深坑边缘安全区钓，激活驱怪装置后再探索深坑。" },
+  { name:"尖吻鲭", latin:"Shortfin Mako", location:"星池", subLoc:"东侧浅滩 / 西侧暗礁", time:"day", depth:"shallow", type:"oceanic", method:"rod", rod:"远洋鱼竿", size:"3×2", value:"$40", ab:"幽灵尖吻鲭", abVal:"$125" },
+  { name:"幽灵鲨", latin:"Ghost Shark", location:"星池", subLoc:"中央深坑内部", time:"night", depth:"deep", type:"oceanic", method:"rod", rod:"深渊鱼竿", size:"4×2", value:"$55", ab:"虚空幽灵鲨", abVal:"$170", tip:"仅深坑内部有，需要深渊鱼竿。务必先激活驱怪装置！" },
+  { name:"旗鱼", latin:"Sailfish", location:"星池", subLoc:"西侧暗礁 / 深坑边缘", time:"day", depth:"shallow", type:"oceanic", method:"rod", rod:"远洋鱼竿", size:"4×1", value:"$50", ab:"骨刺旗鱼", abVal:"$155" },
+  { name:"鲟鱼", latin:"Sturgeon", location:"星池", subLoc:"东侧浅滩", time:"day", depth:"shallow", type:"coastal", method:"rod", rod:"沿海鱼竿", size:"3×1", value:"$20", ab:"变异鲟鱼", abVal:"$65" },
+  { name:"星鱼", latin:"Starfish", location:"星池", subLoc:"东侧浅滩 / 西侧暗礁", time:"any", depth:"shallow", type:"coastal", method:"pot", rod:"蟹笼", size:"1×1", value:"$10", ab:"发光星鱼", abVal:"$32", tip:"蟹笼专属。放在暗礁区域捕获概率更高。" },
+  { name:"极光水母", latin:"Aurora Jellyfish", location:"星池", subLoc:"中央深坑边缘 / 西侧暗礁", time:"night", depth:"shallow", type:"oceanic", method:"trawl", rod:"拖网", size:"1×1", value:"$30", ab:"暗影极光水母", abVal:"$95", tip:"拖网专属。夜间围绕深坑边缘航行捕获。" },
+  { name:"玻璃鱿", latin:"Glass Squid", location:"星池", subLoc:"东侧浅滩 / 中央深坑", time:"night", depth:"shallow", type:"oceanic", method:"trawl", rod:"拖网", size:"1×1", value:"$18", ab:"墨色玻璃鱿", abVal:"$58", tip:"拖网专属。夜间在星池任意开阔水域拖网均可。" },
+  { name:"蓝蟹", latin:"Blue Crab", location:"星池", subLoc:"东侧浅滩", time:"any", depth:"shallow", type:"coastal", method:"pot", rod:"蟹笼", size:"1×1", value:"$12", ab:"巨钳蓝蟹", abVal:"$38", tip:"蟹笼专属。东侧浅滩放置蟹笼。" },
+  { name:"海兔", latin:"Sea Hare", location:"星池", subLoc:"西侧暗礁", time:"any", depth:"shallow", type:"oceanic", method:"trawl", rod:"拖网", size:"1×1", value:"$14", tip:"拖网专属。在西侧暗礁附近拖网。" },
+  // Twisted Strand
+  { name:"红树鲷", latin:"Mangrove Snapper", location:"扭曲海岸", subLoc:"北侧红树林 / 南侧沼泽", time:"day", depth:"shallow", type:"mangrove", method:"rod", rod:"红树林鱼竿", size:"2×2", value:"$22", ab:"瘤状红树鲷", abVal:"$70", tip:"红树林鱼竿是扭曲海岸的必需装备，尽早解锁。" },
+  { name:"大海鲢", latin:"Tarpon", location:"扭曲海岸", subLoc:"废弃营地水域 / 南侧沼泽", time:"day", depth:"shallow", type:"mangrove", method:"rod", rod:"红树林鱼竿", size:"3×2", value:"$25", ab:"骨刺大海鲢", abVal:"$80" },
+  { name:"鳄雀鳝", latin:"Alligator Gar", location:"扭曲海岸", subLoc:"废弃营地水域 / 南侧沼泽", time:"day", depth:"shallow", type:"mangrove", method:"rod", rod:"红树林鱼竿", size:"3×1", value:"$28", ab:"巨颚鳄雀鳝", abVal:"$90" },
+  { name:"长鳍鳗", latin:"Longfin Eel", location:"扭曲海岸", subLoc:"北侧红树林 / 废弃营地水域", time:"night", depth:"shallow", type:"mangrove", method:"rod", rod:"红树林鱼竿", size:"3×1", value:"$24", ab:"多眼长鳍鳗", abVal:"$75", tip:"夜间在废弃营地附近的狭窄水道出现。" },
+  { name:"鲶鱼", latin:"Catfish", location:"扭曲海岸", subLoc:"北侧红树林 / 南侧沼泽", time:"night", depth:"shallow", type:"mangrove", method:"rod", rod:"红树林鱼竿", size:"2×2", value:"$18", ab:"须刺鲶鱼", abVal:"$58" },
+  { name:"马蹄蟹", latin:"Horseshoe Crab", location:"扭曲海岸", subLoc:"北侧红树林浅滩", time:"any", depth:"shallow", type:"mangrove", method:"pot", rod:"蟹笼", size:"2×1", value:"$12", ab:"远古马蹄蟹", abVal:"$38", tip:"蟹笼专属。放在红树林根部浅滩。" },
+  { name:"雀鳝", latin:"Gar", location:"扭曲海岸", subLoc:"废弃营地水域 / 南侧沼泽", time:"day", depth:"shallow", type:"mangrove", method:"rod", rod:"红树林鱼竿", size:"3×1", value:"$20", ab:"利齿雀鳝", abVal:"$65" },
+  { name:"沼虾", latin:"Swamp Crayfish", location:"扭曲海岸", subLoc:"北侧红树林 / 南侧沼泽", time:"any", depth:"shallow", type:"mangrove", method:"pot", rod:"蟹笼", size:"1×1", value:"$10", ab:"巨螯沼虾", abVal:"$32", tip:"蟹笼专属。放在红树林根部水中。" },
+  { name:"水蛭", latin:"Swamp Leech", location:"扭曲海岸", subLoc:"废弃营地水域", time:"night", depth:"shallow", type:"mangrove", method:"trawl", rod:"拖网", size:"1×1", value:"$13", ab:"巨型水蛭", abVal:"$42", tip:"拖网专属。夜间在废弃营地周边水道拖网。" },
+  // Devil's Spine
+  { name:"火山鲷", latin:"Volcanic Snapper", location:"恶魔之脊", subLoc:"北侧火山群 / 古神庙水域", time:"day", depth:"shallow", type:"volcanic", method:"rod", rod:"火山鱼竿", size:"2×2", value:"$30", ab:"熔岩火山鲷", abVal:"$95", tip:"火山鱼竿在恶魔之脊剧情中解锁。" },
+  { name:"装甲鲂鮄", latin:"Armored Searobin", location:"恶魔之脊", subLoc:"北侧火山群", time:"day", depth:"shallow", type:"volcanic", method:"rod", rod:"火山鱼竿", size:"2×2", value:"$28", ab:"铁棘装甲鲂鮄", abVal:"$88" },
+  { name:"熔岩鳗", latin:"Lava Eel", location:"恶魔之脊", subLoc:"北侧火山群 / 南侧沸腾区", time:"night", depth:"shallow", type:"volcanic", method:"rod", rod:"火山鱼竿", size:"3×1", value:"$35", ab:"烈焰熔岩鳗", abVal:"$110", tip:"火山口附近的沸腾水域出现概率更高。" },
+  { name:"萤火鱿", latin:"Firefly Squid", location:"恶魔之脊", subLoc:"古神庙水域 / 南侧沸腾区", time:"night", depth:"shallow", type:"volcanic", method:"rod", rod:"火山鱼竿", size:"2×1", value:"$22", ab:"磷光萤火鱿", abVal:"$70" },
+  { name:"鮟鱇鱼", latin:"Anglerfish", location:"恶魔之脊", subLoc:"南侧沸腾区深水", time:"night", depth:"deep", type:"volcanic", method:"rod", rod:"深渊鱼竿", size:"3×2", value:"$50", ab:"巨口鮟鱇鱼", abVal:"$155", tip:"深水 + 夜间，需要深渊鱼竿。是恶魔之脊最值钱的鱼之一。" },
+  { name:"火山石斑", latin:"Volcanic Grouper", location:"恶魔之脊", subLoc:"古神庙水域 / 南侧沸腾区", time:"day", depth:"deep", type:"volcanic", method:"rod", rod:"深渊鱼竿", size:"3×2", value:"$42", ab:"熔纹火山石斑", abVal:"$130" },
+  { name:"庞贝虫", latin:"Pompeii Worm", location:"恶魔之脊", subLoc:"南侧沸腾区", time:"any", depth:"deep", type:"volcanic", method:"pot", rod:"蟹笼", size:"2×1", value:"$15", ab:"巨型庞贝虫", abVal:"$48", tip:"蟹笼专属。必须放在沸腾区深水，普通浅水不产。" },
+  { name:"火山浮游", latin:"Volcanic Plankton", location:"恶魔之脊", subLoc:"北侧火山群 / 南侧沸腾区", time:"any", depth:"shallow", type:"volcanic", method:"trawl", rod:"拖网", size:"1×1", value:"$12", ab:"烈辉浮游", abVal:"$38", tip:"拖网专属。在火山区域任意开阔水域拖网。" },
+  // Pale Reach DLC
+  { name:"冰鱼", latin:"Icefish", location:"苍白之域", subLoc:"北部冰原 / 南部冰川", time:"day", depth:"shallow", type:"ice", method:"rod", rod:"冰区鱼竿", size:"2×1", value:"$25", ab:"晶化冰鱼", abVal:"$80", tip:"苍白之域最基础的鱼，需冰区鱼竿（DLC专属）。" },
+  { name:"极地鳕", latin:"Polar Cod", location:"苍白之域", subLoc:"北部冰原 / 南部冰川", time:"day", depth:"shallow", type:"ice", method:"rod", rod:"冰区鱼竿", size:"2×1", value:"$20", ab:"霜纹极地鳕", abVal:"$65" },
+  { name:"皱鳃鲨", latin:"Frilled Shark", location:"苍白之域", subLoc:"沉船水域深水区", time:"night", depth:"deep", type:"ice", method:"rod", rod:"深渊鱼竿", size:"4×2", value:"$60", ab:"蛇形皱鳃鲨", abVal:"$185", tip:"苍白之域最值钱的鱼。夜间沉船水域深水区，需要深渊鱼竿。" },
+  { name:"睡鲨", latin:"Sleeper Shark", location:"苍白之域", subLoc:"北部冰原深水 / 沉船水域", time:"night", depth:"deep", type:"ice", method:"rod", rod:"深渊鱼竿", size:"4×2", value:"$55", ab:"苍白睡鲨", abVal:"$170" },
+  { name:"冰鳐", latin:"Ice Skate", location:"苍白之域", subLoc:"南部冰川 / 沉船水域", time:"day", depth:"shallow", type:"ice", method:"rod", rod:"冰区鱼竿", size:"3×2", value:"$28", ab:"霜刺冰鳐", abVal:"$88" },
+  { name:"冰蟹", latin:"Ice Crab", location:"苍白之域", subLoc:"北部冰原浅滩", time:"any", depth:"shallow", type:"ice", method:"pot", rod:"蟹笼", size:"1×1", value:"$14", ab:"冰壳巨钳蟹", abVal:"$44", tip:"蟹笼专属。放在冰原浅滩区域。" },
+  { name:"冰层水母", latin:"Ice Jellyfish", location:"苍白之域", subLoc:"南部冰川 / 沉船水域", time:"night", depth:"shallow", type:"ice", method:"trawl", rod:"拖网", size:"1×1", value:"$32", ab:"寒冰水母", abVal:"$100", tip:"拖网专属。夜间在冰川间水道拖网。" },
+  // Open Ocean
+  { name:"月鱼", latin:"Moonfish", location:"远洋", subLoc:"马罗-悬崖间通道", time:"night", depth:"shallow", type:"oceanic", method:"rod", rod:"远洋鱼竿", size:"3×2", value:"$35", ab:"血月月鱼", abVal:"$110", tip:"夜间在区域间的开阔水域出现。迁徙途中顺手可钓。" },
+  { name:"翻车鱼", latin:"Ocean Sunfish", location:"远洋", subLoc:"星池-海岸间通道 / 远洋各处", time:"day", depth:"shallow", type:"oceanic", method:"rod", rod:"远洋鱼竿", size:"4×3", value:"$40", ab:"巨体翻车鱼", abVal:"$125", tip:"体型巨大（4×3），占货舱空间多。建议货舱升级后再刷。" },
+  { name:"鼠尾鳕", latin:"Rattail", location:"远洋", subLoc:"各区域间深水通道", time:"any", depth:"deep", type:"oceanic", method:"rod", rod:"深渊鱼竿", size:"3×1", value:"$30", ab:"多尾鼠尾鳕", abVal:"$95" },
+  { name:"腔棘鱼", latin:"Coelacanth", location:"远洋", subLoc:"恶魔之脊深水区周边", time:"any", depth:"deep", type:"abyssal", method:"rod", rod:"深渊鱼竿", size:"4×2", value:"$65", ab:"虚空腔棘鱼", abVal:"$200", tip:"活化石级别的最稀有鱼之一。恶魔之脊外围深水有概率出。" },
+  { name:"吞噬鳗", latin:"Gulper Eel", location:"远洋", subLoc:"恶魔之脊深水区 / 远洋深渊", time:"night", depth:"deep", type:"abyssal", method:"rod", rod:"深渊鱼竿", size:"3×1", value:"$55", ab:"巨口吞噬鳗", abVal:"$170" },
+  { name:"巨型鱿鱼", latin:"Giant Squid", location:"远洋", subLoc:"星池-海岸间通道深水", time:"night", depth:"deep", type:"oceanic", method:"rod", rod:"深渊鱼竿", size:"4×2", value:"$50", ab:"深渊巨型鱿鱼", abVal:"$155" },
+  { name:"皇带鱼", latin:"Oarfish King", location:"远洋", subLoc:"恶魔之脊深水区 / 超深渊区", time:"any", depth:"deep", type:"hadal", method:"rod", rod:"超深渊鱼竿", size:"5×1", value:"$80", ab:"远古皇带鱼", abVal:"$250", tip:"游戏最稀有鱼，需要超深渊鱼竿。体型极大（5×1），售价最高。" },
+  { name:"蜘蛛蟹", latin:"Spider Crab", location:"远洋", subLoc:"各区域间通道深水", time:"any", depth:"deep", type:"oceanic", method:"pot", rod:"蟹笼", size:"2×1", value:"$18", ab:"巨型蜘蛛蟹", abVal:"$55", tip:"蟹笼专属。放在远洋深水区。需要强化蟹笼（深水对基础蟹笼耐久消耗快）。" },
+  { name:"磷虾", latin:"Krill", location:"远洋", subLoc:"各区域间通道", time:"any", depth:"shallow", type:"oceanic", method:"trawl", rod:"拖网", size:"1×1", value:"$8", ab:"发光磷虾", abVal:"$25", tip:"拖网专属。任何远洋通道拖网都有。基础拖网就能捕获。" },
+];
+
+// ═══════════════════════════════════════
+// NPC DATA
+// ═══════════════════════════════════════
+const npcData = [
+  { name:"鱼贩", en:"Fishmonger", loc:"大马罗港口", icon:"🐟", tags:[{t:'shop'},{t:'quest'}], desc:"收购所有鱼类，基础售价最高的商人。完成订单提升好感可解锁更高收购价。", quests:["定期索要特定鱼类","好感度最高时收购价 +50%"] },
+  { name:"收藏家", en:"The Collector", loc:"黑石岛 (Blackstone Isle)", icon:"📦", tags:[{t:'story'}], desc:"主线核心NPC。住在黑石岛大宅中，指派你寻找5个圣物。真实身份在结局揭晓。", quests:["圣物一：音乐盒（马罗群岛）","圣物二：戒指（狂风悬崖）","圣物三：项链（星池）","圣物四：怀表（扭曲海岸）","圣物五：王冠（恶魔之脊）"] },
+  { name:"研究员", en:"Researcher", loc:"旧要塞 → 星池实验室", icon:"🔬", tags:[{t:'shop'},{t:'quest'}], desc:"研究海洋生物的科学家。最初在旧要塞（马罗群岛东北），后来搬到星池。", quests:["捕获特定鱼类供研究","完成后解锁特殊装备蓝图","星池驱怪装置任务"] },
+  { name:"隐士·悬崖", en:"Hermit (Gale Cliffs)", loc:"狂风悬崖峭壁小屋", icon:"🏠", tags:[{t:'quest'}], desc:"住在狂风悬崖峭壁上的隐士。对海蛇的习性非常了解。", quests:["提供海蛇巡逻路线情报","给予避开海蛇的航行建议"] },
+  { name:"沉船幸存者", en:"Castaway", loc:"狂风悬崖南侧礁石", icon:"🪝", tags:[{t:'quest'}], desc:"被困在礁石上的幸存者，需要食物和补给。", quests:["送食物和物资","每次送补给获得沉船位置情报"] },
+  { name:"天文学家", en:"Astronomer", loc:"星池观测站", icon:"🔭", tags:[{t:'quest'}], desc:"在星池观测站研究星空。与研究员互为邻居。", quests:["星象观测相关任务","可能影响某些夜间事件"] },
+  { name:"隐士·沼泽", en:"Hermit (Twisted Strand)", loc:"扭曲海岸深处小屋", icon:"🏚️", tags:[{t:'quest'}], desc:"隐居在红树林沼泽深处的隐士。对沼泽中的变异生物有研究。", quests:["提供沼泽变异生物情报","帮助完成图鉴"] },
+  { name:"飞行员", en:"Airman", loc:"扭曲海岸坠机点", icon:"✈️", tags:[{t:'quest'}], desc:"在扭曲海岸坠机的飞行员。飞机零件散落在沼泽各处。", quests:["寻找散落的飞机零件（4-5个）","完成后获得大量研究零件"] },
+  { name:"狂热信徒", en:"Fanatic", loc:"恶魔之脊神庙入口", icon:"🔥", tags:[{t:'story'},{t:'quest'}], desc:"守护古神庙的狂热信徒。对最终剧情有重要影响。", quests:["阻止或帮助他们的仪式","影响最终结局走向"] },
+  { name:"考古学家", en:"Archaeologist", loc:"恶魔之脊营地", icon:"⛏️", tags:[{t:'quest'}], desc:"在恶魔之脊研究古代文明的考古学家。", quests:["古神庙相关调查任务","解锁火山区域情报"] },
+  { name:"灯塔看守人", en:"Lighthouse Keeper", loc:"马罗群岛灯塔 / 各灯塔", icon:"🕯️", tags:[{t:'quest'}], desc:"各地灯塔的看守人，了解周边海域的一切。", quests:["解锁周边隐藏沉船位置","提供区域航行建议"] },
+  { name:"旅商人", en:"Travelling Merchant", loc:"各港口随机出现", icon:"🐚", tags:[{t:'shop'}], desc:"随机出现在各个港口的流动商人。每次货物不同。", quests:["出售稀有物品（研究零件/诱饵/装饰）"] },
+  { name:"兜帽人", en:"Hooded Figures", loc:"各区域隐藏位置（共6人）", icon:"🎭", tags:[{t:'quest'}], desc:"隐藏在各区域的6个神秘人物，高价收购特定鱼类。每人只交易一次。", quests:["马罗群岛 ×1，狂风悬崖 ×1","星池 ×1，扭曲海岸 ×1","恶魔之脊 ×1，远洋 ×1"] },
+  { name:"冰区探险队", en:"Ice Expedition", loc:"苍白之域营地 DLC", icon:"🧊", tags:[{t:'story'},{t:'quest'}], desc:"在苍白之域遇险的探险队。DLC专属剧情。", quests:["完成冰区探索任务","获取冰区鱼竿蓝图","解锁破冰船升级"] },
+];
+
+// ═══════════════════════════════════════
+// RENDER FUNCTIONS
+// ═══════════════════════════════════════
+
+let expandedId = null;
+
+function locTL(key) { return (I18N[LANG].locations && I18N[LANG].locations[key]) || key; }
+function timeTL(time) {
+  if (time==='day') return t('timeLabel.day');
+  if (time==='night') return t('timeLabel.night');
+  return t('timeLabel.any');
+}
+function depthTL(d) { return t(d==='shallow'?'depthLabel.shallow':'depthLabel.deep'); }
+function typeTL(ty) { return t('typeLabel.'+ty)||ty; }
+function methodTL(m) { return t('methodLabel.'+m)||m; }
+
+function renderFilters() {
+  const container = document.getElementById('fishFilters');
+  container.innerHTML = `
+    <div class="filter-group"><label>${t('fish.search')}</label><input type="text" id="searchInput" placeholder="${t('fish.search')}"></div>
+    <div class="filter-group"><label>${t('fish.filterLoc')}</label><select id="filterLocation"><option value="">${t('fish.allLoc')}</option>${Object.keys(I18N[LANG].locations||I18N.zh.locations).map(k => `<option value="${k}">${locTL(k)}</option>`).join('')}</select></div>
+    <div class="filter-group"><label>${t('fish.filterTime')}</label><select id="filterTime"><option value="">${t('fish.allTime')}</option><option value="day">${t('timeLabel.day')}</option><option value="night">${t('timeLabel.night')}</option><option value="any">${t('timeLabel.any')}</option></select></div>
+    <div class="filter-group"><label>${t('fish.filterMethod')}</label><select id="filterMethod"><option value="">${t('fish.allMethod')}</option><option value="rod">${t('methodLabel.rod')}</option><option value="trawl">${t('methodLabel.trawl')}</option><option value="pot">${t('methodLabel.pot')}</option></select></div>
+    <div class="filter-group"><label>${t('fish.filterDepth')}</label><select id="filterDepth"><option value="">${t('fish.allDepth')}</option><option value="shallow">${t('depthLabel.shallow')}</option><option value="deep">${t('depthLabel.deep')}</option></select></div>
+    <div class="filter-group"><label>${t('fish.filterType')}</label><select id="filterType"><option value="">${t('fish.allType')}</option>${['coastal','oceanic','mangrove','volcanic','ice','abyssal','hadal'].map(ty => `<option value="${ty}">${typeTL(ty)}</option>`).join('')}</select></div>
+    <div class="filter-group"><input type="checkbox" id="filterAberration" style="width:auto;margin-right:4px;"><label for="filterAberration" style="cursor:pointer;">${t('fish.abOnly')}</label></div>
+    <button class="btn-reset" onclick="resetFilters()">${t('fish.reset')}</button>`;
+  bindFilterEvents();
+}
+
+function bindFilterEvents() {
+  const si = document.getElementById('searchInput');
+  const fl = document.getElementById('filterLocation');
+  const ft = document.getElementById('filterTime');
+  const fm = document.getElementById('filterMethod');
+  const fd = document.getElementById('filterDepth');
+  const fty = document.getElementById('filterType');
+  if (si) si.addEventListener('input', filterFish);
+  if (fl) fl.addEventListener('change', filterFish);
+  if (ft) ft.addEventListener('change', filterFish);
+  if (fm) fm.addEventListener('change', filterFish);
+  if (fd) fd.addEventListener('change', filterFish);
+  if (fty) fty.addEventListener('change', filterFish);
+  const fab = document.getElementById('filterAberration');
+  if (fab) fab.addEventListener('change', filterFish);
+}
+
+function getFilteredFish() {
+  const si = document.getElementById('searchInput');
+  const fl = document.getElementById('filterLocation');
+  const ft = document.getElementById('filterTime');
+  const fm = document.getElementById('filterMethod');
+  const fd = document.getElementById('filterDepth');
+  const fty = document.getElementById('filterType');
+  const fab = document.getElementById('filterAberration');
+  const search = si ? si.value.toLowerCase().trim() : '';
+  const loc = fl ? fl.value : '';
+  const time = ft ? ft.value : '';
+  const method = fm ? fm.value : '';
+  const depth = fd ? fd.value : '';
+  const type = fty ? fty.value : '';
+  const abOnly = fab ? fab.checked : false;
+
+  return fishData.filter(f => {
+    if (search && !f.name.toLowerCase().includes(search) && !f.latin.toLowerCase().includes(search) && !(f.ab&&f.ab.toLowerCase().includes(search)) && !(f.subLoc&&f.subLoc.toLowerCase().includes(search))) return false;
+    if (loc && f.location !== loc) return false;
+    if (time && f.time !== time) return false;
+    if (method && f.method !== method) return false;
+    if (depth && f.depth !== depth) return false;
+    if (type && f.type !== type) return false;
+    if (abOnly && !f.ab) return false;
+    return true;
+  });
+}
+
+function filterFish() { expandedId = null; renderFish(getFilteredFish()); }
+function resetFilters() {
+  ['searchInput','filterLocation','filterTime','filterMethod','filterDepth','filterType'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const fab = document.getElementById('filterAberration');
+  if (fab) fab.checked = false;
+  expandedId = null;
+  renderFish(fishData);
+}
+
+function renderGuideBanner() {
+  document.getElementById('guideBanner').innerHTML = `
+    <div style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.2);">
+      <div class="guide-title" style="color:#f472b6;">${t('fish.trawlGuideTitle')}</div>
+      <div class="guide-text">${t('fish.trawlGuideText')}</div>
+    </div>
+    <div style="background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.2);">
+      <div class="guide-title" style="color:#fb923c;">${t('fish.potGuideTitle')}</div>
+      <div class="guide-text">${t('fish.potGuideText')}</div>
+    </div>`;
+}
+
+function renderFish(list) {
+  const statsBar = document.getElementById('statsBar');
+  statsBar.innerHTML = `${t('fish.showing')} <strong>${list.length}</strong> ${t('fish.of')} ${fishData.length} ${t('fish.fishUnit')}`;
+  const grid = document.getElementById('fishGrid');
+  const noRes = document.getElementById('noResults');
+  if (list.length===0) { grid.innerHTML=''; noRes.style.display='block'; return; }
+  noRes.style.display='none';
+
+  grid.innerHTML = list.map((f,i) => {
+    const id = `fish-${i}`;
+    const isExp = expandedId === id;
+    const locDisp = locTL(f.location);
+    const rodDisp = f.method==='trawl' ? t('equip.net') : f.method==='pot' ? t('equip.pot') : f.rod;
+    return `<div class="fish-card${f.ab?' aberrant':''}${isExp?' expanded':''}" id="${id}" data-idx="${i}">
+      <span class="expand-hint">${isExp?t('fish.collapseHint'):t('fish.expandHint')}</span>
+      <div class="fish-name">${f.name}${f.ab?` <span class="aberration-badge">${t('fish.abPriceLabel')}: ${f.ab}</span>`:''}</div>
+      <div class="fish-latin">${f.latin}</div>
+      <div class="fish-tags">
+        <span class="tag tag-location">${locDisp}</span>
+        <span class="tag tag-${f.time==='day'?'day':f.time==='night'?'night':'anytime'}">${timeTL(f.time)}</span>
+        <span class="tag tag-depth">${depthTL(f.depth)}</span>
+        <span class="tag tag-type">${typeTL(f.type)}</span>
+        <span class="tag tag-method ${f.method}">${methodTL(f.method)}</span>
+      </div>
+      <dl class="fish-info">
+        <dt>${t('fish.methodLabel')}</dt><dd>${methodTL(f.method)}</dd>
+        <dt>${t('fish.equipLabel')}</dt><dd>${rodDisp}</dd>
+        <dt>${t('fish.sizeLabel')}</dt><dd>${f.size||'2×1'}</dd>
+        <dt>${t('fish.priceLabel')}</dt><dd>${f.value}</dd>
+        ${f.ab?`<dt>${t('fish.abPriceLabel')}</dt><dd style="color:#c084fc;">${f.abVal}</dd>`:''}
+      </dl>
+      <div class="fish-detail"><h4>${t('fish.detailTitle')}</h4><div class="detail-grid">
+        <div class="detail-block"><h5>${t('fish.subLocTitle')}</h5><span class="sub-loc">${f.subLoc||locDisp}</span><span class="coord">${locDisp}</span></div>
+        <div class="detail-block"><h5>${t('fish.condTitle')}</h5><p>${timeTL(f.time)} | ${depthTL(f.depth)} | ${methodTL(f.method)}</p><p class="note">${t('fish.equipLabel')}: ${rodDisp}</p></div>
+        <div class="detail-block"><h5>${t('fish.priceTitle')}</h5><p>${t('fish.priceLabel')}: <strong>${f.value}</strong>${f.ab?` → ${t('fish.abPriceLabel')}: <strong style="color:#c084fc;">${f.abVal}</strong> <span class="note">(~3x)</span>`:''}</p><p class="note">${t('fish.sizeLabel')}: ${f.size||'2×1'}</p></div>
+        ${f.tip?`<div class="detail-block" style="grid-column:1/-1;"><h5>${t('fish.tipTitle')}</h5><p class="tip">💡 ${f.tip}</p></div>`:''}
+      </div></div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.fish-card').forEach(card => {
+    card.addEventListener('click', e => {
+      const id2 = card.id;
+      expandedId = expandedId===id2 ? null : id2;
+      renderFish(getFilteredFish());
+      if (expandedId) { const el = document.getElementById(expandedId); if (el) el.scrollIntoView({ behavior:'smooth', block:'center' }); }
+    });
+  });
+}
+
+function renderEquipTable() {
+  const rows = [
+    ['catRod','coastalRod','coastalRodEff','coastalRodUnlock'],
+    ['catRod','oceanicRod','oceanicRodEff','oceanicRodUnlock'],
+    ['catRod','mangroveRod','mangroveRodEff','mangroveRodUnlock'],
+    ['catRod','abyssalRod','abyssalRodEff','abyssalRodUnlock'],
+    ['catRod','hadalRod','hadalRodEff','hadalRodUnlock'],
+    ['catRod','volcanicRod','volcanicRodEff','volcanicRodUnlock'],
+    ['catRod','iceRod','iceRodEff','iceRodUnlock'],
+    ['catEngine','engine','engineEff','engineUnlock'],
+    ['catTrawl','net','netEff','netUnlock'],
+    ['catPot','pot','potEff','potUnlock'],
+    ['catLight','light','lightEff','lightUnlock'],
+    ['catHull','hull','hullEff','hullUnlock'],
+  ];
+  document.getElementById('equipTable').innerHTML = `<table class="equip-table">
+    <thead><tr><th>${t('equip.cat')}</th><th>${t('equip.name')}</th><th>${t('equip.effect')}</th><th>${t('equip.unlock')}</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td><span class="equip-cat">${t('equip.'+r[0])}</span></td><td>${t('equip.'+r[1])}</td><td>${t('equip.'+r[2])}</td><td>${t('equip.'+r[3])}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderAreas() {
+  const areas = [
+    ['marrows','marrowsDepth','marrowsDesc','marrowsFish'],
+    ['gale','galeDepth','galeDesc','galeFish'],
+    ['basin','basinDepth','basinDesc','basinFish'],
+    ['strand','strandDepth','strandDesc','strandFish'],
+    ['spine','spineDepth','spineDesc','spineFish'],
+    ['pale','paleDepth','paleDesc','paleFish'],
+    ['ocean','oceanDepth','oceanDesc','oceanFish'],
+  ];
+  document.getElementById('areaGrid').innerHTML = areas.map(a => `
+    <div class="area-card">
+      <div class="area-name">${t('areas.'+a[0])}</div>
+      <div class="area-depth">${t('areas.'+a[1])}</div>
+      <div class="area-desc">${t('areas.'+a[2])}</div>
+      <div class="area-fish">${t('areas.'+a[3])}</div>
+    </div>`).join('');
+}
+
+function renderNPCs() {
+  document.getElementById('npcGrid').innerHTML = npcData.map((n,i) => `
+    <div class="npc-card" id="npc-${i}" onclick="this.classList.toggle('expanded')">
+      <div class="npc-header"><div class="npc-icon">${n.icon}</div><div><div class="npc-name">${n.name} <span style="font-weight:400;font-size:.72rem;color:var(--text-dim);">${n.en}</span></div><div class="npc-loc">📍 ${n.loc}</div></div></div>
+      <div class="npc-tags">${n.tags.map(tg => `<span class="npc-tag ${tg.t}">${t('npcTag.'+tg.t)}</span>`).join('')}</div>
+      <div class="npc-desc">${n.desc}</div>
+      <div class="npc-detail"><h5>${t('quests.questRel')}</h5><ul>${n.quests.map(q => `<li>${q}</li>`).join('')}</ul></div>
+    </div>`).join('');
+}
+
+function renderTimeline() {
+  const steps = [
+    ['step','1','s1t','s1d'],
+    ['step','2','s2t','s2d'],
+    ['step','3','s3t','s3d'],
+    ['step','4','s4t','s4d'],
+    ['step','5','s5t','s5d'],
+    ['step','6','s6t','s6d'],
+  ];
+  const endKey = 's7step';
+  document.getElementById('timeline').innerHTML = steps.map(s => `
+    <div class="timeline-item"><div class="timeline-step">${t('quests.'+s[0])} ${s[1]}${t('quests.stepUnit')}</div><div class="timeline-title">${t('quests.'+s[2])}</div><div class="timeline-desc">${t('quests.'+s[3])}</div></div>
+  `).join('') + `
+    <div class="timeline-item"><div class="timeline-step">${t('quests.'+endKey)}</div><div class="timeline-title">${t('quests.s7t')}</div><div class="timeline-desc">
+      <button class="spoiler-toggle" onclick="var n=this.nextElementSibling;n.classList.toggle('show');this.textContent=n.classList.contains('show')?'${t('quests.spoilerHide')}':'${t('quests.spoilerShow')}';">${t('quests.spoilerShow')}</button>
+      <div class="spoiler-content">${t('quests.s7dA')}</div>
+    </div></div>`;
+}
+
+function renderSideQuests() {
+  const quests = [
+    ['sqFishmonger','sqFishmongerSub','sqFishmongerFlow','sqFishmongerReward'],
+    ['sqResearcher','sqResearcherSub','sqResearcherFlow','sqResearcherReward'],
+    ['sqCastaway','sqCastawaySub','sqCastawayFlow','sqCastawayReward'],
+    ['sqAirman','sqAirmanSub','sqAirmanFlow','sqAirmanReward'],
+    ['sqLighthouse','sqLighthouseSub','sqLighthouseFlow','sqLighthouseReward'],
+    ['sqHooded','sqHoodedSub','sqHoodedFlow','sqHoodedReward'],
+    ['sqMerchant','sqMerchantSub','sqMerchantFlow','sqMerchantReward'],
+    ['sqIce','sqIceSub','sqIceFlow','sqIceReward'],
+  ];
+  document.getElementById('sideQuests').innerHTML = quests.map(q => `
+    <div class="fish-card" style="cursor:pointer;" onclick="this.classList.toggle('expanded')">
+      <div class="fish-name">${t('quests.'+q[0])}</div><div class="fish-latin">${t('quests.'+q[1])}</div>
+      <div class="fish-detail"><div class="detail-grid">
+        <div class="detail-block"><h5>${t('quests.taskFlow')}</h5><p>${t('quests.'+q[2])}</p></div>
+        <div class="detail-block"><h5>${t('quests.reward')}</h5><p class="tip">${t('quests.'+q[3])}</p></div>
+      </div></div>
+    </div>`).join('');
+}
+
+function renderFAQ() {
+  const faqs = [
+    ['q1','a1'],['q2','a2'],['q3','a3'],['q4','a4'],['q5','a5'],['q6','a6'],
+    ['q7','a7'],['q8','a8'],['q9','a9'],['q10','a10']
+  ];
+  document.getElementById('faqGrid').innerHTML = faqs.map(fq => `
+    <div class="fish-card" style="border-left:3px solid var(--accent);cursor:default;">
+      <div class="fish-name">${t('faq.'+fq[0])}</div>
+      <div style="font-size:.82rem;color:var(--text-dim);line-height:1.7;margin-top:8px;">${t('faq.'+fq[1])}</div>
+    </div>`).join('');
+}
+
+// ── Init ────────────────────────────
+window.onerror = function(msg, url, line) {
+  document.body.innerHTML = '<div style="background:#200;color:#f88;padding:20px;font-family:monospace;white-space:pre-wrap;"><strong>JS Error:</strong>\n' + msg + '\nLine: ' + line + '</div>';
+};
+function detectLang() {
+  const nav = (navigator.language || '').split('-')[0];
+  return I18N[nav] ? nav : 'zh';
+}
+function boot() {
+  const saved = localStorage.getItem('dredge-lang');
+  LANG = (saved && I18N[saved]) ? saved : detectLang();
+  renderLangSwitch();
+  renderAll();
+}
+try { boot(); } catch(e) {
+  document.body.innerHTML = '<div style="background:#200;color:#f88;padding:20px;font-family:monospace;white-space:pre-wrap;"><strong>Boot Error:</strong>\n' + e.message + '\n' + e.stack + '</div>';
+}
+</script>
+
+</body>
+</html>
